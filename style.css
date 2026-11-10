@@ -1,0 +1,405 @@
+:root {
+  --bg: #fdf8f6;
+  --surface: #ffffff;
+  --text: #2b1d1f;
+  --muted: #7a6669;
+  --accent: #b23a5b;
+  --border: #ecdcd8;
+  --error: #b3261e;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #fbd3e0 0%, #fde4cf 50%, #e6d7f7 100%) fixed;
+  background-color: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+header,
+main {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+header {
+  padding-top: 32px;
+}
+
+h1 {
+  margin: 0;
+  color: var(--accent);
+}
+
+h2 {
+  font-size: 1.15rem;
+  margin: 0 0 12px;
+}
+
+.tagline,
+.hint {
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.how-it-works ol {
+  margin: 0;
+  padding-left: 1.4em;
+}
+
+.how-it-works li + li {
+  margin-top: 4px;
+}
+
+.photo-tips {
+  color: var(--muted);
+  margin: 12px 0 0;
+  padding-left: 1.2em;
+}
+
+section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+}
+
+.upload-button {
+  display: inline-block;
+  background: var(--accent);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.upload-button input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.upload-button:focus-within {
+  outline: 3px solid var(--text);
+  outline-offset: 2px;
+}
+
+.error {
+  color: var(--error);
+  font-weight: 600;
+}
+
+.canvas-wrap {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+}
+
+canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  cursor: crosshair;
+}
+
+.sample-marker {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  margin: -14px 0 0 -14px;
+  border: 3px solid white;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--text);
+  pointer-events: none;
+}
+
+.picked {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+}
+
+.results-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+select {
+  font: inherit;
+  padding: 6px 8px;
+  margin-left: 6px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.empty {
+  color: var(--muted);
+}
+
+.results-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.product-card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.product-image {
+  height: 90px;
+}
+
+.product-info {
+  padding: 8px 10px 10px;
+}
+
+.product-info p {
+  margin: 0;
+}
+
+.product-brand {
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.product-name {
+  font-weight: 600;
+}
+
+.product-meta {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.product-ingredients {
+  margin-top: 6px;
+  font-size: 0.85rem;
+}
+
+.product-ingredients summary {
+  cursor: pointer;
+  padding: 4px 0;
+  font-weight: 600;
+}
+
+.product-ingredients .ingredient-list {
+  margin: 4px 0;
+  padding-left: 1.1em;
+}
+
+.product-info .ingredients-note {
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.ai-key-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.ai-key-form label {
+  width: 100%;
+  font-weight: 600;
+}
+
+.ai-key-form input {
+  flex: 1 1 220px;
+  font: inherit;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+button {
+  font: inherit;
+  font-weight: 600;
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: none;
+  background: var(--accent);
+  color: white;
+  cursor: pointer;
+}
+
+button.secondary {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+.identified-product {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.identified-product .swatch {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+}
+
+.identified-product p,
+.product-why {
+  margin: 0;
+}
+
+.identified-name {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.identification h3 {
+  font-size: 1rem;
+  margin: 20px 0 8px;
+}
+
+.low-confidence {
+  margin: 14px 0 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #fff4d6;
+  color: #6b4e00;
+}
+
+.ingredient-list {
+  margin: 0;
+  padding-left: 1.2em;
+}
+
+.identification .ingredients-note {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin: 6px 0 0;
+}
+
+.product-why {
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+.product-info .animal-testing,
+.animal-testing {
+  margin: 4px 0 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.animal-testing-cruelty-free {
+  color: #1a7f37;
+}
+
+.animal-testing-tested {
+  color: var(--error);
+}
+
+.animal-testing-unknown {
+  color: var(--muted);
+}
+
+.ingredient-flagged {
+  color: #8a4b00;
+  font-weight: 600;
+}
+
+.product-info .dye-summary,
+.dye-summary {
+  margin: 4px 0;
+  font-weight: 600;
+}
+
+.photo-warning {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #fff4d6;
+  color: #6b4e00;
+  font-weight: 600;
+}
+
+.brand-field {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+
+.brand-field input {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  font: inherit;
+  font-weight: normal;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.color-guess {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.brand-check {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.brand-check h3 {
+  font-size: 1rem;
+  margin: 0 0 6px;
+}
+
+.brand-check ul {
+  margin: 0;
+  padding-left: 1.2em;
+}
+
+.brand-check li + li {
+  margin-top: 4px;
+}
+
+.brand-check a {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.brand-check .hint {
+  margin: 8px 0 0;
+  font-size: 0.85rem;
+}

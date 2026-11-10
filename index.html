@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Shade Finder</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Shade Finder</h1>
+      <p class="tagline">Snap a photo of a makeup product and find its closest shades from other brands, often for less.</p>
+    </header>
+
+    <main>
+      <section class="how-it-works" aria-labelledby="how-heading">
+        <h2 id="how-heading">How it works</h2>
+        <ol>
+          <li>Take or upload a photo of your makeup.</li>
+          <li>
+            The AI tells you which product it is, lists its ingredients, and suggests similar
+            products from other brands.
+          </li>
+          <li>You can also tap right on the product's color to match by shade alone.</li>
+        </ol>
+      </section>
+
+      <section class="ai-key" aria-labelledby="ai-key-heading">
+        <h2 id="ai-key-heading">AI key</h2>
+        <p class="hint">
+          Identifying products uses your own Anthropic API key. It's saved only in this browser.
+        </p>
+        <form id="ai-key-form" class="ai-key-form">
+          <label for="ai-key-input">Anthropic API key</label>
+          <input id="ai-key-input" type="password" autocomplete="off" placeholder="sk-ant-..." />
+          <button type="submit">Save key</button>
+          <button id="ai-key-remove" type="button" class="secondary" hidden>Remove key</button>
+        </form>
+        <p id="ai-key-status" class="hint" role="status"></p>
+      </section>
+
+      <section class="upload" aria-labelledby="upload-heading">
+        <h2 id="upload-heading">1. Add a photo</h2>
+        <label class="upload-button">
+          <input id="photo-input" type="file" accept="image/*" />
+          Choose or take a photo
+        </label>
+        <ul class="photo-tips">
+          <li>Use good light, like near a window.</li>
+          <li>Get close so the product fills most of the photo.</li>
+          <li>Keep the product in focus.</li>
+        </ul>
+        <p id="upload-error" class="error" role="alert" hidden></p>
+
+        <div id="photo-area" hidden>
+          <p id="photo-warning" class="photo-warning" role="status" hidden></p>
+          <p class="hint">
+            Tap directly on the product's color, like the lipstick itself or the foundation in the
+            bottle. Don't tap the packaging or the background. You can tap again to try a different
+            spot.
+          </p>
+          <div class="canvas-wrap">
+            <canvas id="photo-canvas" aria-label="Your photo. Tap to pick a shade."></canvas>
+            <div id="sample-marker" class="sample-marker" hidden></div>
+          </div>
+          <div class="picked">
+            <span id="picked-swatch" class="swatch"></span>
+            <span>Picked shade: <strong id="picked-hex"></strong></span>
+          </div>
+        </div>
+      </section>
+
+      <section class="identification" aria-labelledby="identification-heading">
+        <h2 id="identification-heading">2. What's in your photo</h2>
+        <label class="brand-field" for="brand-input">
+          Know the brand? Type it here (optional)
+          <input id="brand-input" type="text" maxlength="60" autocomplete="off" placeholder="e.g. Fenty Beauty" />
+        </label>
+        <div id="brand-check" class="brand-check" hidden>
+          <h3 id="brand-check-heading"></h3>
+          <ul id="brand-check-links"></ul>
+          <p class="hint">These open trusted sites in a new tab, so you can see the latest information yourself.</p>
+        </div>
+        <p id="identification-status" class="empty" role="status">
+          Add a photo to see what product it might be.
+        </p>
+        <p id="color-guess" class="color-guess" hidden></p>
+        <p id="color-guess-note" class="hint" hidden>
+          This guess is based on the color only. Add an AI key above to identify the exact product.
+        </p>
+        <div id="identification-result"></div>
+      </section>
+
+      <section class="results" aria-labelledby="results-heading">
+        <div class="results-header">
+          <h2 id="results-heading">3. Match by color</h2>
+          <label>
+            Product type
+            <select id="category-select" aria-describedby="filter-note">
+              <option value="all">All products</option>
+              <option value="lipstick">Lipstick</option>
+              <option value="foundation">Foundation</option>
+              <option value="blush">Blush</option>
+            </select>
+          </label>
+        </div>
+        <p id="filter-note" class="hint">Pick a product type to narrow the matches.</p>
+        <p id="results-empty" class="empty">
+          Your matches will show up here after you add a photo and tap a shade.
+        </p>
+        <ul id="results-list" class="results-list"></ul>
+      </section>
+    </main>
+
+    <script type="module" src="src/app.js"></script>
+  </body>
+</html>
