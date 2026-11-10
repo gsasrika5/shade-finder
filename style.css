@@ -403,3 +403,58 @@ button.secondary {
   margin: 8px 0 0;
   font-size: 0.85rem;
 }
+
+.preferences {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px 12px;
+  margin: 0 0 14px;
+}
+
+.preferences legend {
+  font-weight: 600;
+  padding: 0 4px;
+}
+
+.preferences label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+}
+
+.preferences input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  accent-color: var(--accent);
+}
+
+.price-preference input {
+  width: 6em;
+  font: inherit;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.preferences .hint {
+  margin: 6px 0 0;
+  font-size: 0.85rem;
+}
+
+.preferences-summary {
+  font-weight: 600;
+  margin: 0 0 10px;
+}
+
+.product-fits {
+  border: 2px solid #1a7f37;
+}
+
+.product-info .fits-label {
+  color: #1a7f37;
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}

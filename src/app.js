@@ -3,12 +3,14 @@ import { averageColor, colorName, findClosestProducts, rgbToHex } from "./color.
 import { renderIdentification } from "./identification-view.js";
 import { identifyProduct, IdentifyError } from "./identify.js";
 import { photoProblem } from "./photo-quality.js";
+import { fitsPreferences, hasPreferences, loadPreferences, savePreferences } from "./preferences.js";
 import { animalTestingBadge, ingredientList } from "./product-details.js";
 import { products } from "./products.js";
 
 const MAX_PHOTO_WIDTH = 800;
 const SAMPLE_RADIUS = 6;
 const API_KEY_STORAGE = "shadeFinder.apiKey";
+const MAX_MATCHES = 6;
 
 const photoInput = document.getElementById("photo-input");
 const uploadError = document.getElementById("upload-error");
@@ -28,6 +30,11 @@ const keyStatus = document.getElementById("ai-key-status");
 const identificationStatus = document.getElementById("identification-status");
 const identificationResult = document.getElementById("identification-result");
 const brandInput = document.getElementById("brand-input");
+const crueltyFreeCheckbox = document.getElementById("pref-cruelty-free");
+const noDyesCheckbox = document.getElementById("pref-no-dyes");
+const veganCheckbox = document.getElementById("pref-vegan");
+const maxPriceInput = document.getElementById("pref-max-price");
+const preferencesSummary = document.getElementById("preferences-summary");
 const colorGuess = document.getElementById("color-guess");
 const colorGuessNote = document.getElementById("color-guess-note");
 const brandCheck = document.getElementById("brand-check");
@@ -181,6 +188,47 @@ function pickShade(x, y) {
 
 // Without an AI key, guess what the product is from the picked color and the
 // closest match, and say plainly that it's only a guess.
+function currentPreferences() {
+  const maxPrice = Number(maxPriceInput.value);
+  return {
+    crueltyFree: crueltyFreeCheckbox.checked,
+    noDyes: noDyesCheckbox.checked,
+    vegan: veganCheckbox.checked,
+    // An empty, zero, or negative price means "any price".
+    maxPrice: maxPriceInput.value !== "" && maxPrice > 0 ? maxPrice : null,
+  };
+}
+
+function showPreferences(preferences) {
+  crueltyFreeCheckbox.checked = preferences.crueltyFree;
+  noDyesCheckbox.checked = preferences.noDyes;
+  veganCheckbox.checked = preferences.vegan;
+  maxPriceInput.value = preferences.maxPrice ?? "";
+}
+
+// Puts matches that fit what the user checked first, keeping closest-first
+// order within each group, so fitting products aren't cut off by the limit.
+function orderByPreferences(closeMatches, preferences) {
+  if (!hasPreferences(preferences)) {
+    preferencesSummary.hidden = true;
+    return closeMatches.slice(0, MAX_MATCHES).map((product) => ({ ...product, fits: false }));
+  }
+  const fitting = closeMatches.filter((product) => fitsPreferences(product, preferences));
+  const others = closeMatches.filter((product) => !fitsPreferences(product, preferences));
+  const shown = [
+    ...fitting.map((product) => ({ ...product, fits: true })),
+    ...others.map((product) => ({ ...product, fits: false })),
+  ].slice(0, MAX_MATCHES);
+
+  const fittingShown = shown.filter((product) => product.fits).length;
+  preferencesSummary.hidden = closeMatches.length === 0;
+  preferencesSummary.textContent =
+    fittingShown === 0
+      ? "None of the close matches fit everything you checked, so here are the closest ones."
+      : `${fittingShown} of ${shown.length} matches fit what matters to you.`;
+  return shown;
+}
+
 function renderColorGuess(matches) {
   const showGuess = pickedColor !== null && currentApiKey() === "";
   colorGuess.hidden = !showGuess;
@@ -226,11 +274,13 @@ function renderResults() {
     return;
   }
 
-  const matches = findClosestProducts(pickedColor, products, {
+  const closeMatches = findClosestProducts(pickedColor, products, {
     category: categorySelect.value,
     excludeBrand: brandInput.value,
+    limit: Infinity,
   });
-  renderColorGuess(matches);
+  renderColorGuess(closeMatches);
+  const matches = orderByPreferences(closeMatches, currentPreferences());
   resultsEmpty.hidden = matches.length > 0;
   resultsEmpty.textContent =
     "No close matches for this shade yet. Try tapping a different spot, or pick another product type.";
@@ -255,6 +305,13 @@ function renderResults() {
     item.querySelector(".product-price").textContent = `$${product.price}`;
     item.querySelector(".product-match").textContent = `${product.match}% match`;
     item.querySelector(".product-meta").after(animalTestingBadge(product.animalTesting));
+    if (product.fits) {
+      item.classList.add("product-fits");
+      const fitsLabel = document.createElement("p");
+      fitsLabel.className = "fits-label";
+      fitsLabel.textContent = "✓ Fits what matters to you";
+      item.querySelector(".product-brand").before(fitsLabel);
+    }
     item.querySelector(".product-ingredients summary").after(ingredientList(product.ingredients));
     resultsList.append(item);
   }
@@ -270,6 +327,13 @@ canvas.addEventListener("click", (event) => {
 });
 
 categorySelect.addEventListener("change", renderResults);
+for (const preferenceInput of [crueltyFreeCheckbox, noDyesCheckbox, veganCheckbox, maxPriceInput]) {
+  preferenceInput.addEventListener("input", () => {
+    savePreferences(currentPreferences());
+    renderResults();
+  });
+}
+
 brandInput.addEventListener("input", () => {
   renderBrandCheck();
   renderResults();
@@ -295,4 +359,5 @@ keyRemoveButton.addEventListener("click", () => {
   renderResults();
 });
 
+showPreferences(loadPreferences());
 showKeyStatus();

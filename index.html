@@ -105,6 +105,18 @@
           </label>
         </div>
         <p id="filter-note" class="hint">Pick a product type to narrow the matches.</p>
+        <fieldset id="preferences" class="preferences">
+          <legend>What matters to you?</legend>
+          <label><input id="pref-cruelty-free" type="checkbox" /> Cruelty-free</label>
+          <label><input id="pref-no-dyes" type="checkbox" /> No dyes to watch</label>
+          <label><input id="pref-vegan" type="checkbox" /> Vegan (no beeswax, carmine, or other animal ingredients)</label>
+          <label class="price-preference">
+            Under $
+            <input id="pref-max-price" type="number" min="1" step="1" inputmode="numeric" placeholder="any" />
+          </label>
+          <p class="hint">Matches that fit everything you check move to the top. Your choices are saved on this device.</p>
+        </fieldset>
+        <p id="preferences-summary" class="preferences-summary" role="status" hidden></p>
         <p id="results-empty" class="empty">
           Your matches will show up here after you add a photo and tap a shade.
         </p>

@@ -37,3 +37,11 @@ export function dyeWarning(ingredient) {
   const match = dyesToWatch.find((dye) => dye.pattern.test(ingredient));
   return match ? match.reason : null;
 }
+
+// Ingredients that come from animals, so a product with any of them isn't vegan.
+const animalIngredients =
+  /\bbeeswax\b|\bcera alba\b|\bcarmine\b|\bci ?75470\b|\bcochineal\b|\blanolin\b|\bshellac\b|\bguanine\b|\bhoney\b|\btallow\b|\bcollagen\b|\bkeratin\b|\bsilk\b/i;
+
+export function isAnimalIngredient(ingredient) {
+  return animalIngredients.test(ingredient);
+}
