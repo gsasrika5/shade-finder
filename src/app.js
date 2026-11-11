@@ -1,5 +1,5 @@
 import { brandCheckLinks } from "./brand-links.js";
-import { averageColor, colorName, findClosestProducts, rgbToHex } from "./color.js";
+import { averageColor, colorName, findClosestProducts, looksLikePackaging, rgbToHex } from "./color.js";
 import { renderIdentification } from "./identification-view.js";
 import { identifyProduct, IdentifyError } from "./identify.js";
 import { photoProblem } from "./photo-quality.js";
@@ -12,6 +12,8 @@ import { splitSwatch } from "./swatch.js";
 
 const MAX_PHOTO_WIDTH = 800;
 const SAMPLE_RADIUS = 6;
+// How much the close-up of the tapped spot is magnified.
+const CLOSE_UP_ZOOM = 3;
 const API_KEY_STORAGE = "shadeFinder.apiKey";
 const MAX_MATCHES = 6;
 
@@ -22,7 +24,9 @@ const photoWarning = document.getElementById("photo-warning");
 const canvas = document.getElementById("photo-canvas");
 const sampleMarker = document.getElementById("sample-marker");
 const pickedSwatch = document.getElementById("picked-swatch");
-const pickedHex = document.getElementById("picked-hex");
+const pickedName = document.getElementById("picked-name");
+const pickedZoom = document.getElementById("picked-zoom");
+const packagingTip = document.getElementById("packaging-tip");
 const categorySelect = document.getElementById("category-select");
 const resultsEmpty = document.getElementById("results-empty");
 const resultsList = document.getElementById("results-list");
@@ -178,14 +182,42 @@ function showPhotoWarning(imageData, focus) {
   photoWarning.textContent = problem ?? "";
 }
 
+// Draws a magnified view around the tapped spot, with a ring showing the
+// area the color was averaged from, so a tap on the packaging is easy to spot.
+function showCloseUp(x, y) {
+  const zoomContext = pickedZoom.getContext("2d");
+  const sourceSize = pickedZoom.width / CLOSE_UP_ZOOM;
+  zoomContext.imageSmoothingEnabled = false;
+  zoomContext.clearRect(0, 0, pickedZoom.width, pickedZoom.height);
+  zoomContext.drawImage(
+    canvas,
+    x - sourceSize / 2,
+    y - sourceSize / 2,
+    sourceSize,
+    sourceSize,
+    0,
+    0,
+    pickedZoom.width,
+    pickedZoom.height,
+  );
+  zoomContext.strokeStyle = "white";
+  zoomContext.lineWidth = 2;
+  zoomContext.beginPath();
+  zoomContext.arc(pickedZoom.width / 2, pickedZoom.height / 2, SAMPLE_RADIUS * CLOSE_UP_ZOOM, 0, Math.PI * 2);
+  zoomContext.stroke();
+}
+
 function pickShade(x, y) {
   const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
   pickedColor = averageColor(imageData, x, y, SAMPLE_RADIUS);
   showPhotoWarning(imageData, { x, y });
 
-  const hex = rgbToHex(pickedColor);
-  pickedSwatch.style.background = hex;
-  pickedHex.textContent = hex;
+  pickedSwatch.style.background = rgbToHex(pickedColor);
+  const name = colorName(pickedColor);
+  pickedName.textContent = name;
+  showCloseUp(x, y);
+  packagingTip.hidden = !looksLikePackaging(pickedColor);
+  packagingTip.textContent = `That reads as ${name}, which is often the case, cap, or background. If you didn't tap the makeup, tap the product itself.`;
 
   sampleMarker.style.left = `${(x / canvas.width) * 100}%`;
   sampleMarker.style.top = `${(y / canvas.height) * 100}%`;

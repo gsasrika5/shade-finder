@@ -109,7 +109,18 @@ const namedShades = [
   { name: "beige", hex: "#dbad8a" },
   { name: "caramel", hex: "#b98057" },
   { name: "deep brown", hex: "#5e3a28" },
+  // Not makeup shades: these are what a tap on a case, cap, or background reads.
+  { name: "black", hex: "#1a1a1a" },
+  { name: "gray", hex: "#8a8a8a" },
+  { name: "white", hex: "#f5f5f5" },
 ];
+
+const PACKAGING_COLORS = ["black", "gray", "white"];
+
+// True when the color is more likely packaging or background than makeup.
+export function looksLikePackaging(rgb) {
+  return PACKAGING_COLORS.includes(colorName(rgb));
+}
 
 export function colorName(rgb) {
   let closest = namedShades[0];

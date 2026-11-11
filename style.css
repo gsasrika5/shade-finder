@@ -586,3 +586,49 @@ button.secondary {
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+
+.tap-instruction {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--accent);
+  margin: 10px 0 4px;
+}
+
+.picked-zoom {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  flex-shrink: 0;
+  cursor: default;
+}
+
+.picked-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+
+.picked-label .swatch {
+  width: 20px;
+  height: 20px;
+}
+
+.picked .hint {
+  margin: 2px 0 0;
+  font-size: 0.85rem;
+}
+
+.packaging-tip {
+  margin: 6px 0 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #fdf3d7;
+  color: #6b4e00;
+  font-size: 0.9rem;
+}
+
+.packaging-tip[hidden] {
+  display: none;
+}

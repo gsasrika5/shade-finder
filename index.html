@@ -74,6 +74,7 @@
 
         <div id="photo-area" hidden>
           <p id="photo-warning" class="photo-warning" role="status" hidden></p>
+          <p class="tap-instruction">👆 Tap the makeup itself, not the case, cap, or background.</p>
           <p class="hint">
             Tap directly on the product's color, like the lipstick itself or the foundation in the
             bottle. Don't tap the packaging or the background. You can tap again to try a different
@@ -84,8 +85,14 @@
             <div id="sample-marker" class="sample-marker" hidden></div>
           </div>
           <div class="picked">
-            <span id="picked-swatch" class="swatch"></span>
-            <span>Picked shade: <strong id="picked-hex"></strong></span>
+            <canvas id="picked-zoom" class="picked-zoom" width="72" height="72" aria-hidden="true"></canvas>
+            <div>
+              <p class="picked-label">
+                Color read: <span id="picked-swatch" class="swatch"></span> <strong id="picked-name"></strong>
+              </p>
+              <p class="hint">The close-up shows the spot you tapped.</p>
+              <p id="packaging-tip" class="packaging-tip" role="status" hidden></p>
+            </div>
           </div>
         </div>
       </section>
