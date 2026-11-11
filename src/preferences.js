@@ -10,20 +10,37 @@ export function hasPreferences(preferences) {
   return preferences.crueltyFree || preferences.noDyes || preferences.vegan || preferences.maxPrice !== null;
 }
 
+// One true/false per checked preference: does the product meet it?
+function checkedPreferenceResults(product, preferences) {
+  const results = [];
+  if (preferences.crueltyFree) {
+    results.push(product.animalTesting === "cruelty-free");
+  }
+  if (preferences.noDyes) {
+    results.push(!product.ingredients.some((ingredient) => dyeWarning(ingredient)));
+  }
+  if (preferences.vegan) {
+    results.push(!product.ingredients.some(isAnimalIngredient));
+  }
+  if (preferences.maxPrice !== null) {
+    results.push(product.price <= preferences.maxPrice);
+  }
+  return results;
+}
+
 export function fitsPreferences(product, preferences) {
-  if (preferences.crueltyFree && product.animalTesting !== "cruelty-free") {
-    return false;
+  return checkedPreferenceResults(product, preferences).every((met) => met);
+}
+
+// The share of checked preferences the product meets, 0–100, or null when
+// nothing is checked. Kept separate from the color match percent.
+export function preferenceFitPercent(product, preferences) {
+  const results = checkedPreferenceResults(product, preferences);
+  if (results.length === 0) {
+    return null;
   }
-  if (preferences.noDyes && product.ingredients.some((ingredient) => dyeWarning(ingredient))) {
-    return false;
-  }
-  if (preferences.vegan && product.ingredients.some(isAnimalIngredient)) {
-    return false;
-  }
-  if (preferences.maxPrice !== null && product.price > preferences.maxPrice) {
-    return false;
-  }
-  return true;
+  const metCount = results.filter((met) => met).length;
+  return Math.round((metCount / results.length) * 100);
 }
 
 // Browser storage can be blocked (for example in private windows); the app

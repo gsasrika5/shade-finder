@@ -3,7 +3,7 @@ import { averageColor, colorName, findClosestProducts, rgbToHex } from "./color.
 import { renderIdentification } from "./identification-view.js";
 import { identifyProduct, IdentifyError } from "./identify.js";
 import { photoProblem } from "./photo-quality.js";
-import { fitsPreferences, hasPreferences, loadPreferences, savePreferences } from "./preferences.js";
+import { hasPreferences, loadPreferences, preferenceFitPercent, savePreferences } from "./preferences.js";
 import { animalTestingBadge, ingredientList } from "./product-details.js";
 import { products } from "./products.js";
 
@@ -206,19 +206,21 @@ function showPreferences(preferences) {
   maxPriceInput.value = preferences.maxPrice ?? "";
 }
 
-// Puts matches that fit what the user checked first, keeping closest-first
-// order within each group, so fitting products aren't cut off by the limit.
+// Orders matches by how many checked preferences they meet, keeping
+// closest-first order among equal fits, so fitting products aren't cut off
+// by the limit.
 function orderByPreferences(closeMatches, preferences) {
   if (!hasPreferences(preferences)) {
     preferencesSummary.hidden = true;
-    return closeMatches.slice(0, MAX_MATCHES).map((product) => ({ ...product, fits: false }));
+    return closeMatches.slice(0, MAX_MATCHES).map((product) => ({ ...product, fitPercent: null, fits: false }));
   }
-  const fitting = closeMatches.filter((product) => fitsPreferences(product, preferences));
-  const others = closeMatches.filter((product) => !fitsPreferences(product, preferences));
-  const shown = [
-    ...fitting.map((product) => ({ ...product, fits: true })),
-    ...others.map((product) => ({ ...product, fits: false })),
-  ].slice(0, MAX_MATCHES);
+  const shown = closeMatches
+    .map((product) => {
+      const fitPercent = preferenceFitPercent(product, preferences);
+      return { ...product, fitPercent, fits: fitPercent === 100 };
+    })
+    .sort((a, b) => b.fitPercent - a.fitPercent)
+    .slice(0, MAX_MATCHES);
 
   const fittingShown = shown.filter((product) => product.fits).length;
   preferencesSummary.hidden = closeMatches.length === 0;
@@ -304,6 +306,12 @@ function renderResults() {
     item.querySelector(".product-name").textContent = product.name;
     item.querySelector(".product-price").textContent = `$${product.price}`;
     item.querySelector(".product-match").textContent = `${product.match}% match`;
+    if (product.fitPercent !== null) {
+      const fitPercent = document.createElement("span");
+      fitPercent.className = "product-fit-percent";
+      fitPercent.textContent = `${product.fitPercent}% preferences matched`;
+      item.querySelector(".product-meta").append(" · ", fitPercent);
+    }
     item.querySelector(".product-meta").after(animalTestingBadge(product.animalTesting));
     if (product.fits) {
       item.classList.add("product-fits");
