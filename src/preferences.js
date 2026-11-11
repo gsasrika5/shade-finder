@@ -4,10 +4,16 @@ import { dyeWarning, isAnimalIngredient } from "./ingredient-flags.js";
 
 const PREFERENCES_STORAGE = "shadeFinder.preferences";
 
-export const noPreferences = { crueltyFree: false, noDyes: false, vegan: false, maxPrice: null };
+export const noPreferences = { crueltyFree: false, noDyes: false, vegan: false, maxPrice: null, undertone: null };
 
 export function hasPreferences(preferences) {
-  return preferences.crueltyFree || preferences.noDyes || preferences.vegan || preferences.maxPrice !== null;
+  return (
+    preferences.crueltyFree ||
+    preferences.noDyes ||
+    preferences.vegan ||
+    preferences.maxPrice !== null ||
+    preferences.undertone !== null
+  );
 }
 
 // One true/false per checked preference: does the product meet it?
@@ -25,6 +31,10 @@ function checkedPreferenceResults(product, preferences) {
   if (preferences.maxPrice !== null) {
     results.push(product.price <= preferences.maxPrice);
   }
+  // Only foundations have an undertone, so it doesn't count for other products.
+  if (preferences.undertone !== null && product.category === "foundation") {
+    results.push(product.undertone === preferences.undertone);
+  }
   return results;
 }
 
@@ -33,7 +43,7 @@ export function fitsPreferences(product, preferences) {
 }
 
 // The share of checked preferences the product meets, 0–100, or null when
-// nothing is checked. Kept separate from the color match percent.
+// nothing checked applies to it. Kept separate from the color match percent.
 export function preferenceFitPercent(product, preferences) {
   const results = checkedPreferenceResults(product, preferences);
   if (results.length === 0) {

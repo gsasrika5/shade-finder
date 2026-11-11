@@ -40,17 +40,22 @@ const productList = [
   { id: "lip-17", category: "lipstick", brand: "Bloom Beauty", name: "Rosebud", shadeHex: "#c9637a", price: 9 },
   { id: "lip-18", category: "lipstick", brand: "Luxe Atelier", name: "Rose Garden", shadeHex: "#c66078", price: 42 },
 
-  // Foundation
-  { id: "fdn-01", category: "foundation", brand: "Luxe Atelier", name: "Skin Silk 1N Porcelain", shadeHex: "#f1d3bf", price: 55 },
-  { id: "fdn-02", category: "foundation", brand: "Daily Glow", name: "True Match Ivory", shadeHex: "#efd1bb", price: 11 },
-  { id: "fdn-03", category: "foundation", brand: "Velvet & Co", name: "Soft Matte 3W Sand", shadeHex: "#ddb08c", price: 38 },
-  { id: "fdn-04", category: "foundation", brand: "Petal Lab", name: "Everyday Sand", shadeHex: "#dbad8a", price: 8 },
-  { id: "fdn-05", category: "foundation", brand: "Luxe Atelier", name: "Skin Silk 5W Caramel", shadeHex: "#b98057", price: 55 },
-  { id: "fdn-06", category: "foundation", brand: "Bloom Beauty", name: "Caramel Glow", shadeHex: "#b67e56", price: 12 },
-  { id: "fdn-07", category: "foundation", brand: "Velvet & Co", name: "Soft Matte 7N Espresso", shadeHex: "#6e4430", price: 38 },
-  { id: "fdn-08", category: "foundation", brand: "Daily Glow", name: "True Match Mocha", shadeHex: "#71462f", price: 11 },
-  { id: "fdn-09", category: "foundation", brand: "Bloom Beauty", name: "Honey Beige", shadeHex: "#cf9f78", price: 12 },
-  { id: "fdn-10", category: "foundation", brand: "Petal Lab", name: "Deep Cocoa", shadeHex: "#5a3826", price: 8 },
+  // Foundation (undertones are made up too, so the undertone choice has
+  // something to rank)
+  { id: "fdn-01", category: "foundation", brand: "Luxe Atelier", name: "Skin Silk 1N Porcelain", shadeHex: "#f1d3bf", price: 55, undertone: "neutral" },
+  { id: "fdn-02", category: "foundation", brand: "Daily Glow", name: "True Match Ivory", shadeHex: "#efd1bb", price: 11, undertone: "neutral" },
+  { id: "fdn-03", category: "foundation", brand: "Velvet & Co", name: "Soft Matte 3W Sand", shadeHex: "#ddb08c", price: 38, undertone: "warm" },
+  { id: "fdn-04", category: "foundation", brand: "Petal Lab", name: "Everyday Sand", shadeHex: "#dbad8a", price: 8, undertone: "warm" },
+  { id: "fdn-05", category: "foundation", brand: "Luxe Atelier", name: "Skin Silk 5W Caramel", shadeHex: "#b98057", price: 55, undertone: "warm" },
+  { id: "fdn-06", category: "foundation", brand: "Bloom Beauty", name: "Caramel Glow", shadeHex: "#b67e56", price: 12, undertone: "warm" },
+  { id: "fdn-07", category: "foundation", brand: "Velvet & Co", name: "Soft Matte 7N Espresso", shadeHex: "#6e4430", price: 38, undertone: "neutral" },
+  { id: "fdn-08", category: "foundation", brand: "Daily Glow", name: "True Match Mocha", shadeHex: "#71462f", price: 11, undertone: "warm" },
+  { id: "fdn-09", category: "foundation", brand: "Bloom Beauty", name: "Honey Beige", shadeHex: "#cf9f78", price: 12, undertone: "warm" },
+  { id: "fdn-10", category: "foundation", brand: "Petal Lab", name: "Deep Cocoa", shadeHex: "#5a3826", price: 8, undertone: "neutral" },
+  { id: "fdn-11", category: "foundation", brand: "Daily Glow", name: "True Match Rose Ivory", shadeHex: "#eecbc0", price: 11, undertone: "cool" },
+  { id: "fdn-12", category: "foundation", brand: "Velvet & Co", name: "Soft Matte 3C Rose Beige", shadeHex: "#d6a796", price: 38, undertone: "cool" },
+  { id: "fdn-13", category: "foundation", brand: "Petal Lab", name: "Everyday Cool Tan", shadeHex: "#b07c68", price: 8, undertone: "cool" },
+  { id: "fdn-14", category: "foundation", brand: "Luxe Atelier", name: "Skin Silk 8C Ebony", shadeHex: "#674036", price: 55, undertone: "cool" },
 
   // Blush
   { id: "blu-01", category: "blush", brand: "Luxe Atelier", name: "Flush Peach", shadeHex: "#f2a58a", price: 40 },

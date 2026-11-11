@@ -34,6 +34,7 @@ const crueltyFreeCheckbox = document.getElementById("pref-cruelty-free");
 const noDyesCheckbox = document.getElementById("pref-no-dyes");
 const veganCheckbox = document.getElementById("pref-vegan");
 const maxPriceInput = document.getElementById("pref-max-price");
+const undertoneSelect = document.getElementById("pref-undertone");
 const preferencesSummary = document.getElementById("preferences-summary");
 const colorGuess = document.getElementById("color-guess");
 const colorGuessNote = document.getElementById("color-guess-note");
@@ -196,6 +197,7 @@ function currentPreferences() {
     vegan: veganCheckbox.checked,
     // An empty, zero, or negative price means "any price".
     maxPrice: maxPriceInput.value !== "" && maxPrice > 0 ? maxPrice : null,
+    undertone: undertoneSelect.value || null,
   };
 }
 
@@ -204,6 +206,7 @@ function showPreferences(preferences) {
   noDyesCheckbox.checked = preferences.noDyes;
   veganCheckbox.checked = preferences.vegan;
   maxPriceInput.value = preferences.maxPrice ?? "";
+  undertoneSelect.value = preferences.undertone ?? "";
 }
 
 // Orders matches by how many checked preferences they meet, keeping
@@ -223,7 +226,7 @@ function orderByPreferences(closeMatches, preferences) {
     .slice(0, MAX_MATCHES);
 
   const fittingShown = shown.filter((product) => product.fits).length;
-  preferencesSummary.hidden = closeMatches.length === 0;
+  preferencesSummary.hidden = shown.every((product) => product.fitPercent === null);
   preferencesSummary.textContent =
     fittingShown === 0
       ? "None of the close matches fit everything you checked, so here are the closest ones."
@@ -313,6 +316,9 @@ function renderResults() {
       item.querySelector(".product-meta").append(" · ", fitPercent);
     }
     item.querySelector(".product-meta").after(animalTestingBadge(product.animalTesting));
+    if (product.undertone) {
+      item.querySelector(".product-meta").after(undertoneLabel(product.undertone, currentPreferences().undertone));
+    }
     if (product.fits) {
       item.classList.add("product-fits");
       const fitsLabel = document.createElement("p");
@@ -325,6 +331,24 @@ function renderResults() {
   }
 }
 
+// Names a foundation's undertone and, once the user has picked theirs, says
+// whether the two match.
+function undertoneLabel(productUndertone, userUndertone) {
+  const label = document.createElement("p");
+  label.className = "undertone-label";
+  label.textContent = `${capitalize(productUndertone)} undertone`;
+  if (userUndertone !== null) {
+    const matches = productUndertone === userUndertone;
+    label.classList.add(matches ? "undertone-match" : "undertone-mismatch");
+    label.textContent += matches ? " · ✓ matches yours" : ` · yours is ${userUndertone}`;
+  }
+  return label;
+}
+
+function capitalize(word) {
+  return word.charAt(0).toUpperCase() + word.slice(1);
+}
+
 photoInput.addEventListener("change", () => handlePhoto(photoInput.files[0]));
 
 canvas.addEventListener("click", (event) => {
@@ -335,7 +359,7 @@ canvas.addEventListener("click", (event) => {
 });
 
 categorySelect.addEventListener("change", renderResults);
-for (const preferenceInput of [crueltyFreeCheckbox, noDyesCheckbox, veganCheckbox, maxPriceInput]) {
+for (const preferenceInput of [crueltyFreeCheckbox, noDyesCheckbox, veganCheckbox, maxPriceInput, undertoneSelect]) {
   preferenceInput.addEventListener("input", () => {
     savePreferences(currentPreferences());
     renderResults();

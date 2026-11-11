@@ -460,6 +460,31 @@ button.secondary {
   border: 1px solid var(--border);
 }
 
+.undertone-preference {
+  flex-wrap: wrap;
+}
+
+.undertone-preference select {
+  font: inherit;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.undertone-label {
+  font-size: 0.85rem;
+  margin: 4px 0 0;
+}
+
+.undertone-match {
+  color: #1a7f37;
+  font-weight: 600;
+}
+
+.undertone-mismatch {
+  color: var(--muted);
+}
+
 .preferences .hint {
   margin: 6px 0 0;
   font-size: 0.85rem;
