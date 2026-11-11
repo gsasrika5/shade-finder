@@ -510,3 +510,62 @@ button.secondary {
   font-weight: 700;
   margin-bottom: 4px;
 }
+
+.save-button {
+  margin-top: 8px;
+  padding: 6px 14px;
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+.save-button.saved {
+  background: var(--accent);
+  color: white;
+}
+
+.saved-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.saved-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.saved-item + .saved-item {
+  border-top: 1px solid var(--border);
+}
+
+.saved-swatch {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.saved-text {
+  flex: 1;
+}
+
+.saved-brand {
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.saved-name {
+  font-weight: 600;
+}
+
+.saved-price {
+  color: var(--muted);
+}
+
+.saved-remove {
+  padding: 6px 12px;
+}
