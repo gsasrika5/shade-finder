@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>My saved shades · Shade Atelier</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <a class="back-link" href="index.html">← Back to Shade Atelier</a>
+      <h1>♥ My saved shades</h1>
+      <p class="tagline">The shades you saved, kept on this device.</p>
+    </header>
+
+    <main>
+      <section aria-labelledby="saved-list-heading">
+        <h2 id="saved-list-heading" class="sr-only">Saved shades</h2>
+        <div id="saved-empty" class="empty" hidden>
+          <p>You haven't saved any shades yet.</p>
+          <p>
+            <a href="index.html">Go back</a>, add a photo of your makeup, and tap ♡ Save on any match to
+            keep it here.
+          </p>
+        </div>
+        <ul id="saved-list" class="results-list"></ul>
+      </section>
+    </main>
+
+    <script type="module" src="src/saved-page.js"></script>
+  </body>
+</html>

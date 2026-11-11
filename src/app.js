@@ -6,8 +6,9 @@ import { photoProblem } from "./photo-quality.js";
 import { hasPreferences, loadPreferences, preferenceFitPercent, savePreferences } from "./preferences.js";
 import { animalTestingBadge, ingredientList } from "./product-details.js";
 import { products } from "./products.js";
-import { loadSavedShades, storeSavedShades, toggleSavedShade } from "./saved-shades.js";
+import { isSaved, loadSavedShades, storeSavedShades, toggleSavedShade } from "./saved-shades.js";
 import { parsePaidPrice, savingsLabel } from "./savings.js";
+import { splitSwatch } from "./swatch.js";
 
 const MAX_PHOTO_WIDTH = 800;
 const SAMPLE_RADIUS = 6;
@@ -44,14 +45,14 @@ const colorGuessNote = document.getElementById("color-guess-note");
 const brandCheck = document.getElementById("brand-check");
 const brandCheckHeading = document.getElementById("brand-check-heading");
 const brandCheckLinkList = document.getElementById("brand-check-links");
-const savedShadesSection = document.getElementById("saved-shades");
-const savedList = document.getElementById("saved-list");
+const savedLink = document.getElementById("saved-link");
+const savedCount = document.getElementById("saved-count");
 
 const context = canvas.getContext("2d", { willReadFrequently: true });
 let pickedColor = null;
 let latestIdentification = 0;
 let originalPhotoSize = null;
-let savedShadeIds = loadSavedShades();
+let savedShades = loadSavedShades();
 
 // Browser storage can be blocked (for example in private windows), so the app
 // still works without it; the key just won't be remembered.
@@ -301,8 +302,6 @@ function renderResults() {
     const item = document.createElement("li");
     item.className = "product-card";
     item.innerHTML = `
-      <div class="product-image" style="background:${product.shadeHex}" role="img"
-           aria-label="${product.name} shade"></div>
       <div class="product-info">
         <p class="product-brand"></p>
         <p class="product-name"></p>
@@ -312,6 +311,12 @@ function renderResults() {
           <p class="ingredients-note">Sample data until real products are added.</p>
         </details>
       </div>`;
+    item.prepend(
+      splitSwatch(rgbToHex(pickedColor), product.shadeHex, `Your color next to ${product.name}`, {
+        className: "product-image",
+        withLabels: true,
+      }),
+    );
     item.querySelector(".product-info").append(saveButton(product));
     item.querySelector(".product-brand").textContent = product.brand;
     item.querySelector(".product-name").textContent = product.name;
@@ -349,23 +354,25 @@ function renderResults() {
 // A ♡ button that saves the product to "My saved shades", or removes it once
 // it's saved.
 function saveButton(product) {
-  const isSaved = savedShadeIds.includes(product.id);
+  const saved = isSaved(savedShades, product.id);
   const button = document.createElement("button");
   button.type = "button";
-  button.className = isSaved ? "save-button saved" : "save-button";
-  button.textContent = isSaved ? "♥ Saved" : "♡ Save";
+  button.className = saved ? "save-button saved" : "save-button";
+  button.textContent = saved ? "♥ Saved" : "♡ Save";
   button.dataset.productId = product.id;
-  button.setAttribute("aria-pressed", String(isSaved));
-  button.setAttribute("aria-label", `${isSaved ? "Remove" : "Save"} ${product.name} by ${product.brand}`);
-  button.addEventListener("click", () => toggleSaved(product.id));
+  button.setAttribute("aria-pressed", String(saved));
+  button.setAttribute("aria-label", `${saved ? "Remove" : "Save"} ${product.name} by ${product.brand}`);
+  button.addEventListener("click", () =>
+    toggleSaved(product.id, { yourColor: rgbToHex(pickedColor), match: product.match }),
+  );
   return button;
 }
 
-function toggleSaved(productId) {
+function toggleSaved(productId, details) {
   const savePressed = document.activeElement?.classList.contains("save-button");
-  savedShadeIds = toggleSavedShade(savedShadeIds, productId);
-  storeSavedShades(savedShadeIds);
-  renderSavedShades();
+  savedShades = toggleSavedShade(savedShades, productId, details);
+  storeSavedShades(savedShades);
+  renderSavedLink();
   renderResults();
   // The matches are redrawn, so keep focus on the button that was pressed.
   if (savePressed) {
@@ -373,29 +380,11 @@ function toggleSaved(productId) {
   }
 }
 
-function renderSavedShades() {
-  // Skips ids that no longer match a product, such as after the sample data changes.
-  const savedProducts = savedShadeIds
-    .map((id) => products.find((product) => product.id === id))
-    .filter(Boolean);
-  savedShadesSection.hidden = savedProducts.length === 0;
-  savedList.replaceChildren();
-  for (const product of savedProducts) {
-    const item = document.createElement("li");
-    item.className = "saved-item";
-    item.innerHTML = `
-      <span class="saved-swatch" style="background:${product.shadeHex}" role="img"
-            aria-label="${product.name} shade"></span>
-      <span class="saved-text"><span class="saved-brand"></span> <span class="saved-name"></span>
-        <span class="saved-price"></span></span>
-      <button type="button" class="secondary saved-remove">Remove</button>`;
-    item.querySelector(".saved-brand").textContent = product.brand;
-    item.querySelector(".saved-name").textContent = product.name;
-    item.querySelector(".saved-price").textContent = `$${product.price}`;
-    item.querySelector(".saved-remove").setAttribute("aria-label", `Remove ${product.name} from saved shades`);
-    item.querySelector(".saved-remove").addEventListener("click", () => toggleSaved(product.id));
-    savedList.append(item);
-  }
+// The saved shades live on their own page; this shows how many there are and
+// links there once at least one is saved.
+function renderSavedLink() {
+  savedLink.hidden = savedShades.length === 0;
+  savedCount.textContent = savedShades.length;
 }
 
 // Names a foundation's undertone and, once the user has picked theirs, says
@@ -460,5 +449,5 @@ keyRemoveButton.addEventListener("click", () => {
 });
 
 showPreferences(loadPreferences());
-renderSavedShades();
+renderSavedLink();
 showKeyStatus();

@@ -524,48 +524,65 @@ button.secondary {
   color: white;
 }
 
-.saved-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.saved-item {
+.split-swatch {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 0;
 }
 
-.saved-item + .saved-item {
-  border-top: 1px solid var(--border);
-}
-
-.saved-swatch {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  flex-shrink: 0;
-}
-
-.saved-text {
+.swatch-half {
   flex: 1;
+  display: flex;
+  align-items: flex-end;
+  padding: 6px;
 }
 
-.saved-brand {
-  font-size: 0.8rem;
+/* A dark tag stays readable on any shade, from pale foundation to deep plum. */
+.swatch-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+  background: rgba(0, 0, 0, 0.45);
+  padding: 1px 6px;
+  border-radius: 999px;
+}
+
+.saved-note {
+  font-size: 0.85rem;
   color: var(--muted);
-  text-transform: uppercase;
 }
 
-.saved-name {
+.saved-link {
+  display: block;
+  margin: 20px 0;
+  padding: 14px 20px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.saved-link[hidden] {
+  display: none;
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 8px;
+  color: var(--accent);
   font-weight: 600;
 }
 
-.saved-price {
-  color: var(--muted);
+.saved-remove {
+  margin-top: 8px;
+  padding: 6px 14px;
 }
 
-.saved-remove {
-  padding: 6px 12px;
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
