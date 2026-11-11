@@ -6,6 +6,7 @@ import { photoProblem } from "./photo-quality.js";
 import { hasPreferences, loadPreferences, preferenceFitPercent, savePreferences } from "./preferences.js";
 import { animalTestingBadge, ingredientList } from "./product-details.js";
 import { products } from "./products.js";
+import { parsePaidPrice, savingsLabel } from "./savings.js";
 
 const MAX_PHOTO_WIDTH = 800;
 const SAMPLE_RADIUS = 6;
@@ -30,6 +31,7 @@ const keyStatus = document.getElementById("ai-key-status");
 const identificationStatus = document.getElementById("identification-status");
 const identificationResult = document.getElementById("identification-result");
 const brandInput = document.getElementById("brand-input");
+const paidPriceInput = document.getElementById("paid-price-input");
 const crueltyFreeCheckbox = document.getElementById("pref-cruelty-free");
 const noDyesCheckbox = document.getElementById("pref-no-dyes");
 const veganCheckbox = document.getElementById("pref-vegan");
@@ -290,6 +292,7 @@ function renderResults() {
   resultsEmpty.textContent =
     "No close matches for this shade yet. Try tapping a different spot, or pick another product type.";
 
+  const paidPrice = parsePaidPrice(paidPriceInput.value);
   for (const product of matches) {
     const item = document.createElement("li");
     item.className = "product-card";
@@ -309,6 +312,13 @@ function renderResults() {
     item.querySelector(".product-name").textContent = product.name;
     item.querySelector(".product-price").textContent = `$${product.price}`;
     item.querySelector(".product-match").textContent = `${product.match}% match`;
+    const savings = savingsLabel(product.price, paidPrice);
+    if (savings) {
+      const savingsText = document.createElement("span");
+      savingsText.className = savings.saves ? "product-savings saves" : "product-savings";
+      savingsText.textContent = savings.text;
+      item.querySelector(".product-price").after(" (", savingsText, ")");
+    }
     if (product.fitPercent !== null) {
       const fitPercent = document.createElement("span");
       fitPercent.className = "product-fit-percent";
@@ -359,6 +369,7 @@ canvas.addEventListener("click", (event) => {
 });
 
 categorySelect.addEventListener("change", renderResults);
+paidPriceInput.addEventListener("input", renderResults);
 for (const preferenceInput of [crueltyFreeCheckbox, noDyesCheckbox, veganCheckbox, maxPriceInput, undertoneSelect]) {
   preferenceInput.addEventListener("input", () => {
     savePreferences(currentPreferences());

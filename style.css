@@ -223,6 +223,11 @@ select {
   color: var(--muted);
 }
 
+.product-savings.saves {
+  color: #1a7f37;
+  font-weight: 600;
+}
+
 .product-ingredients {
   margin-top: 6px;
   font-size: 0.85rem;
