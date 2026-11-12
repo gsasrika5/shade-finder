@@ -23,23 +23,27 @@ export function forgetSearch() {
   }
 }
 
+// Checks that a stored search looks right before it's used. The photo must be
+// an image data URL, since it becomes an image source, and a saved color must
+// be a plain #rrggbb, since it goes into a style.
+export function isValidSearch(search) {
+  const numbers = [search?.originalWidth, search?.originalHeight, search?.tapX, search?.tapY];
+  const texts = [search?.brand, search?.paidPrice, search?.category];
+  return (
+    typeof search?.photo === "string" &&
+    /^data:image\/(png|jpeg);base64,/.test(search.photo) &&
+    numbers.every((number) => Number.isFinite(number) && number >= 0) &&
+    texts.every((text) => typeof text === "string") &&
+    (search.color === undefined || (typeof search.color === "string" && /^#[0-9a-f]{6}$/i.test(search.color)))
+  );
+}
+
 // Returns the remembered search, or null when there is none or it doesn't
-// look right. The photo must be an image data URL, since it becomes an
-// image source.
+// look right.
 export function recallSearch() {
   try {
     const search = JSON.parse(sessionStorage.getItem(CURRENT_SEARCH_STORAGE) ?? "null");
-    const numbers = [search?.originalWidth, search?.originalHeight, search?.tapX, search?.tapY];
-    const texts = [search?.brand, search?.paidPrice, search?.category];
-    if (
-      typeof search?.photo !== "string" ||
-      !/^data:image\/(png|jpeg);base64,/.test(search.photo) ||
-      !numbers.every((number) => Number.isFinite(number) && number >= 0) ||
-      !texts.every((text) => typeof text === "string")
-    ) {
-      return null;
-    }
-    return search;
+    return isValidSearch(search) ? search : null;
   } catch {
     return null;
   }

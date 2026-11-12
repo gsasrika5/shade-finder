@@ -61,6 +61,10 @@
 
       <section class="upload" aria-labelledby="upload-heading">
         <h2 id="upload-heading">1. Add a photo</h2>
+        <div id="recent-products" class="recent-products" hidden>
+          <p class="recent-heading">Your recent products (tap one to go back to it)</p>
+          <div id="recent-list" class="recent-list"></div>
+        </div>
         <label class="upload-button">
           <input id="photo-input" type="file" accept="image/*" />
           Choose or take a photo
@@ -94,9 +98,10 @@
               <p id="packaging-tip" class="packaging-tip" role="status" hidden></p>
             </div>
           </div>
-          <button id="start-over" type="button" class="secondary start-over">
-            ✕ Start over with a new product
-          </button>
+          <div class="photo-actions">
+            <button id="add-another" type="button">+ Add another product</button>
+            <button id="start-over" type="button" class="secondary">✕ Start over</button>
+          </div>
         </div>
       </section>
 

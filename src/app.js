@@ -1,12 +1,13 @@
 import { brandCheckLinks } from "./brand-links.js";
 import { forgetSearch, recallSearch, rememberSearch } from "./current-search.js";
-import { averageColor, colorName, findClosestProducts, looksLikePackaging, rgbToHex } from "./color.js";
+import { averageColor, colorName, findClosestProducts, hexToRgb, looksLikePackaging, rgbToHex } from "./color.js";
 import { renderIdentification } from "./identification-view.js";
 import { identifyProduct, IdentifyError } from "./identify.js";
 import { photoProblem } from "./photo-quality.js";
 import { hasPreferences, loadPreferences, preferenceFitPercent, savePreferences } from "./preferences.js";
 import { animalTestingBadge, ingredientList } from "./product-details.js";
 import { products } from "./products.js";
+import { addRecentProduct, loadRecentProducts, storeRecentProducts } from "./recent-products.js";
 import { isSaved, loadSavedShades, storeSavedShades, toggleSavedShade } from "./saved-shades.js";
 import { parsePaidPrice, savingsLabel } from "./savings.js";
 import { splitSwatch } from "./swatch.js";
@@ -24,6 +25,9 @@ const photoInput = document.getElementById("photo-input");
 const uploadError = document.getElementById("upload-error");
 const photoArea = document.getElementById("photo-area");
 const startOverButton = document.getElementById("start-over");
+const addAnotherButton = document.getElementById("add-another");
+const recentProductsSection = document.getElementById("recent-products");
+const recentList = document.getElementById("recent-list");
 const uploadHeading = document.getElementById("upload-heading");
 const photoWarning = document.getElementById("photo-warning");
 const canvas = document.getElementById("photo-canvas");
@@ -62,6 +66,7 @@ let pickedColor = null;
 let latestIdentification = 0;
 let originalPhotoSize = null;
 let pickedSpot = null;
+let recentProducts = loadRecentProducts();
 let savedShades = loadSavedShades();
 
 // Browser storage can be blocked (for example in private windows), so the app
@@ -486,6 +491,25 @@ keyRemoveButton.addEventListener("click", () => {
   renderResults();
 });
 
+// Everything needed to bring the current product back later, except the photo.
+function describeCurrentProduct() {
+  return {
+    originalWidth: originalPhotoSize.width,
+    originalHeight: originalPhotoSize.height,
+    tapX: pickedSpot.x,
+    tapY: pickedSpot.y,
+    color: rgbToHex(pickedColor),
+    brand: brandInput.value,
+    paidPrice: paidPriceInput.value,
+    category: categorySelect.value,
+  };
+}
+
+// Recent products keep a compressed photo, so several fit in storage.
+function currentProductForRecents() {
+  return { ...describeCurrentProduct(), photo: canvas.toDataURL("image/jpeg", 0.9) };
+}
+
 // Keeps the current photo and choices for this tab when leaving the page, such
 // as to open My saved shades, so they're back on return. A PNG keeps colors
 // exact; if it's too big to store, a JPEG is tried instead.
@@ -493,15 +517,7 @@ function rememberCurrentSearch() {
   if (pickedSpot === null) {
     return;
   }
-  const search = {
-    originalWidth: originalPhotoSize.width,
-    originalHeight: originalPhotoSize.height,
-    tapX: pickedSpot.x,
-    tapY: pickedSpot.y,
-    brand: brandInput.value,
-    paidPrice: paidPriceInput.value,
-    category: categorySelect.value,
-  };
+  const search = describeCurrentProduct();
   if (!rememberSearch({ ...search, photo: canvas.toDataURL("image/png") })) {
     if (!rememberSearch({ ...search, photo: canvas.toDataURL("image/jpeg", 0.92) })) {
       forgetSearch();
@@ -509,19 +525,14 @@ function rememberCurrentSearch() {
   }
 }
 
-// Puts back a photo and choices remembered earlier in this tab. The AI isn't
-// asked again, since each identification costs money.
-async function restoreSearch() {
-  const search = recallSearch();
-  if (!search) {
-    return;
-  }
+// Puts back a product's photo and choices. The AI isn't asked again, since
+// each identification costs money. Returns false if the photo won't open.
+async function restoreProduct(search) {
   let image;
   try {
     image = await loadImage(search.photo);
   } catch {
-    forgetSearch();
-    return;
+    return false;
   }
   canvas.width = image.width;
   canvas.height = image.height;
@@ -533,6 +544,7 @@ async function restoreSearch() {
   if ([...categorySelect.options].some((option) => option.value === search.category)) {
     categorySelect.value = search.category;
   }
+  identificationResult.replaceChildren();
   renderBrandCheck();
   pickShade(Math.min(search.tapX, canvas.width - 1), Math.min(search.tapY, canvas.height - 1));
   if (currentApiKey()) {
@@ -541,18 +553,19 @@ async function restoreSearch() {
   } else {
     identificationStatus.hidden = true;
   }
+  return true;
 }
 
-// Clears the current product (photo, tapped color, brand, price, and matches)
-// after the user confirms, so they can add another. Saved shades and "What
-// matters to you?" choices stay.
-function startOver() {
-  const confirmed = window.confirm(
-    "Clear this photo and start over with a new product? Your saved shades and choices will stay.",
-  );
-  if (!confirmed) {
-    return;
+async function restoreRememberedSearch() {
+  const search = recallSearch();
+  if (search && !(await restoreProduct(search))) {
+    forgetSearch();
   }
+}
+
+// Clears the current product (photo, tapped color, brand, price, and matches).
+// Saved shades, recent products, and "What matters to you?" choices stay.
+function clearCurrentProduct() {
   // Drop any AI answer still on its way for the old photo.
   latestIdentification += 1;
   pickedColor = null;
@@ -575,10 +588,67 @@ function startOver() {
   uploadHeading.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
+function startOver() {
+  const confirmed = window.confirm(
+    "Clear this photo and start over with a new product? Your saved shades and choices will stay.",
+  );
+  if (confirmed) {
+    clearCurrentProduct();
+  }
+}
+
+// Moves the current product into "Your recent products" and clears the page
+// for the next one.
+function addAnotherProduct() {
+  recentProducts = storeRecentProducts(addRecentProduct(recentProducts, currentProductForRecents()));
+  renderRecentProducts();
+  clearCurrentProduct();
+}
+
+// Brings back a recent product. The product on screen, if any, takes its
+// place in the recent row so nothing is lost.
+async function openRecentProduct(index) {
+  const chosen = recentProducts[index];
+  if (!chosen) {
+    return;
+  }
+  let remaining = recentProducts.filter((_, position) => position !== index);
+  if (pickedSpot !== null) {
+    remaining = addRecentProduct(remaining, currentProductForRecents());
+  }
+  recentProducts = storeRecentProducts(remaining);
+  renderRecentProducts();
+  await restoreProduct(chosen);
+  uploadHeading.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function renderRecentProducts() {
+  recentProductsSection.hidden = recentProducts.length === 0;
+  recentList.replaceChildren(
+    ...recentProducts.map((product, index) => {
+      const label = [colorName(hexToRgb(product.color)), product.brand.trim()].filter(Boolean).join(" · ");
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "recent-product";
+      button.setAttribute("aria-label", `Open recent product: ${label}`);
+      const swatch = document.createElement("span");
+      swatch.className = "recent-swatch";
+      swatch.style.background = product.color;
+      const text = document.createElement("span");
+      text.textContent = label;
+      button.append(swatch, text);
+      button.addEventListener("click", () => openRecentProduct(index));
+      return button;
+    }),
+  );
+}
+
 startOverButton.addEventListener("click", startOver);
+addAnotherButton.addEventListener("click", addAnotherProduct);
 window.addEventListener("pagehide", rememberCurrentSearch);
 
 showPreferences(loadPreferences());
 renderSavedLink();
 showKeyStatus();
-restoreSearch();
+renderRecentProducts();
+restoreRememberedSearch();
