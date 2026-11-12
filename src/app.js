@@ -1,4 +1,5 @@
 import { brandCheckLinks } from "./brand-links.js";
+import { forgetSearch, recallSearch, rememberSearch } from "./current-search.js";
 import { averageColor, colorName, findClosestProducts, looksLikePackaging, rgbToHex } from "./color.js";
 import { renderIdentification } from "./identification-view.js";
 import { identifyProduct, IdentifyError } from "./identify.js";
@@ -56,6 +57,7 @@ const context = canvas.getContext("2d", { willReadFrequently: true });
 let pickedColor = null;
 let latestIdentification = 0;
 let originalPhotoSize = null;
+let pickedSpot = null;
 let savedShades = loadSavedShades();
 
 // Browser storage can be blocked (for example in private windows), so the app
@@ -97,19 +99,12 @@ function showError(message) {
   uploadError.hidden = false;
 }
 
-function loadImage(file) {
+function loadImage(source) {
   return new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(file);
     const image = new Image();
-    image.onload = () => {
-      URL.revokeObjectURL(url);
-      resolve(image);
-    };
-    image.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error("unreadable image"));
-    };
-    image.src = url;
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error("unreadable image"));
+    image.src = source;
   });
 }
 
@@ -123,12 +118,15 @@ async function handlePhoto(file) {
     return;
   }
 
+  const photoUrl = URL.createObjectURL(file);
   let image;
   try {
-    image = await loadImage(file);
+    image = await loadImage(photoUrl);
   } catch {
     showError("We couldn't open that photo. Try a different one, or take a new picture.");
     return;
+  } finally {
+    URL.revokeObjectURL(photoUrl);
   }
 
   const scale = Math.min(1, MAX_PHOTO_WIDTH / image.width);
@@ -208,6 +206,7 @@ function showCloseUp(x, y) {
 }
 
 function pickShade(x, y) {
+  pickedSpot = { x, y };
   const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
   pickedColor = averageColor(imageData, x, y, SAMPLE_RADIUS);
   showPhotoWarning(imageData, { x, y });
@@ -480,6 +479,66 @@ keyRemoveButton.addEventListener("click", () => {
   renderResults();
 });
 
+// Keeps the current photo and choices for this tab when leaving the page, such
+// as to open My saved shades, so they're back on return. A PNG keeps colors
+// exact; if it's too big to store, a JPEG is tried instead.
+function rememberCurrentSearch() {
+  if (pickedSpot === null) {
+    return;
+  }
+  const search = {
+    originalWidth: originalPhotoSize.width,
+    originalHeight: originalPhotoSize.height,
+    tapX: pickedSpot.x,
+    tapY: pickedSpot.y,
+    brand: brandInput.value,
+    paidPrice: paidPriceInput.value,
+    category: categorySelect.value,
+  };
+  if (!rememberSearch({ ...search, photo: canvas.toDataURL("image/png") })) {
+    if (!rememberSearch({ ...search, photo: canvas.toDataURL("image/jpeg", 0.92) })) {
+      forgetSearch();
+    }
+  }
+}
+
+// Puts back a photo and choices remembered earlier in this tab. The AI isn't
+// asked again, since each identification costs money.
+async function restoreSearch() {
+  const search = recallSearch();
+  if (!search) {
+    return;
+  }
+  let image;
+  try {
+    image = await loadImage(search.photo);
+  } catch {
+    forgetSearch();
+    return;
+  }
+  canvas.width = image.width;
+  canvas.height = image.height;
+  context.drawImage(image, 0, 0);
+  photoArea.hidden = false;
+  originalPhotoSize = { width: search.originalWidth, height: search.originalHeight };
+  brandInput.value = search.brand;
+  paidPriceInput.value = search.paidPrice;
+  if ([...categorySelect.options].some((option) => option.value === search.category)) {
+    categorySelect.value = search.category;
+  }
+  renderBrandCheck();
+  pickShade(Math.min(search.tapX, canvas.width - 1), Math.min(search.tapY, canvas.height - 1));
+  if (currentApiKey()) {
+    identificationStatus.hidden = false;
+    identificationStatus.textContent = "Your photo is back. To identify it with AI again, choose the photo again.";
+  } else {
+    identificationStatus.hidden = true;
+  }
+}
+
+window.addEventListener("pagehide", rememberCurrentSearch);
+
 showPreferences(loadPreferences());
 renderSavedLink();
 showKeyStatus();
+restoreSearch();
