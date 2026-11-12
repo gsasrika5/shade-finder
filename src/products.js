@@ -39,6 +39,20 @@ const productList = [
   { id: "lip-16", category: "lipstick", brand: "Petal Lab", name: "Fuchsia Fever", shadeHex: "#dc437a", price: 5 },
   { id: "lip-17", category: "lipstick", brand: "Bloom Beauty", name: "Rosebud", shadeHex: "#c9637a", price: 9 },
   { id: "lip-18", category: "lipstick", brand: "Luxe Atelier", name: "Rose Garden", shadeHex: "#c66078", price: 42 },
+  { id: "lip-19", category: "lipstick", brand: "Bloom Beauty", name: "Mulberry Silk", shadeHex: "#6a1f3a", price: 9 },
+  { id: "lip-20", category: "lipstick", brand: "Luxe Atelier", name: "Black Cherry", shadeHex: "#561830", price: 42 },
+  { id: "lip-21", category: "lipstick", brand: "Petal Lab", name: "Wine Velvet", shadeHex: "#66213a", price: 5 },
+  { id: "lip-22", category: "lipstick", brand: "Daily Glow", name: "Papaya Pop", shadeHex: "#e66a55", price: 7 },
+  { id: "lip-23", category: "lipstick", brand: "Luxe Atelier", name: "Coral Reef", shadeHex: "#d95a49", price: 42 },
+  { id: "lip-24", category: "lipstick", brand: "Petal Lab", name: "Peach Coral", shadeHex: "#e46e5a", price: 5 },
+  { id: "lip-25", category: "lipstick", brand: "Velvet & Co", name: "Rosewood", shadeHex: "#a0646f", price: 30 },
+  { id: "lip-26", category: "lipstick", brand: "Daily Glow", name: "Mauve Mood", shadeHex: "#955a69", price: 7 },
+  { id: "lip-27", category: "lipstick", brand: "Bloom Beauty", name: "Dusk Rose", shadeHex: "#a2687a", price: 9 },
+  { id: "lip-28", category: "lipstick", brand: "Velvet & Co", name: "Scarlet Night", shadeHex: "#a91f2e", price: 30 },
+  { id: "lip-29", category: "lipstick", brand: "Bloom Beauty", name: "Ruby Kiss", shadeHex: "#b2252f", price: 9 },
+  { id: "lip-30", category: "lipstick", brand: "Daily Glow", name: "Brick Red", shadeHex: "#9e1d28", price: 7 },
+  { id: "lip-31", category: "lipstick", brand: "Bloom Beauty", name: "Magenta Muse", shadeHex: "#d94077", price: 9 },
+  { id: "lip-32", category: "lipstick", brand: "Petal Lab", name: "Tea Rose", shadeHex: "#c25e74", price: 5 },
 
   // Foundation (undertones are made up too, so the undertone choice has
   // something to rank)
@@ -56,6 +70,10 @@ const productList = [
   { id: "fdn-12", category: "foundation", brand: "Velvet & Co", name: "Soft Matte 3C Rose Beige", shadeHex: "#d6a796", price: 38, undertone: "cool" },
   { id: "fdn-13", category: "foundation", brand: "Petal Lab", name: "Everyday Cool Tan", shadeHex: "#b07c68", price: 8, undertone: "cool" },
   { id: "fdn-14", category: "foundation", brand: "Luxe Atelier", name: "Skin Silk 8C Ebony", shadeHex: "#674036", price: 55, undertone: "cool" },
+  { id: "fdn-15", category: "foundation", brand: "Petal Lab", name: "Everyday Ivory Silk", shadeHex: "#f2d5c2", price: 8, undertone: "neutral" },
+  { id: "fdn-16", category: "foundation", brand: "Bloom Beauty", name: "Warm Porcelain", shadeHex: "#edcdb4", price: 12, undertone: "warm" },
+  { id: "fdn-17", category: "foundation", brand: "Velvet & Co", name: "Soft Matte 8W Mahogany", shadeHex: "#643e2c", price: 38, undertone: "warm" },
+  { id: "fdn-18", category: "foundation", brand: "Bloom Beauty", name: "Deep Espresso", shadeHex: "#5f3b2a", price: 12, undertone: "neutral" },
 
   // Blush
   { id: "blu-01", category: "blush", brand: "Luxe Atelier", name: "Flush Peach", shadeHex: "#f2a58a", price: 40 },
@@ -68,6 +86,10 @@ const productList = [
   { id: "blu-08", category: "blush", brand: "Daily Glow", name: "Cotton Candy", shadeHex: "#f4b5c1", price: 6 },
   { id: "blu-09", category: "blush", brand: "Bloom Beauty", name: "Fuchsia Flush", shadeHex: "#e2588a", price: 10 },
   { id: "blu-10", category: "blush", brand: "Luxe Atelier", name: "Pink Punch", shadeHex: "#de5587", price: 40 },
+  { id: "blu-11", category: "blush", brand: "Daily Glow", name: "Pink Flame", shadeHex: "#e04f86", price: 6 },
+  { id: "blu-12", category: "blush", brand: "Petal Lab", name: "Raspberry Glow", shadeHex: "#b95870", price: 4 },
+  { id: "blu-13", category: "blush", brand: "Bloom Beauty", name: "Petal Pink", shadeHex: "#e3909f", price: 10 },
+  { id: "blu-14", category: "blush", brand: "Petal Lab", name: "Blush Ballet", shadeHex: "#f2b0bd", price: 4 },
 ];
 
 export const products = productList.map((product) => ({
