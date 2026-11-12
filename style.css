@@ -632,3 +632,7 @@ button.secondary {
 .packaging-tip[hidden] {
   display: none;
 }
+
+.start-over {
+  margin-top: 14px;
+}

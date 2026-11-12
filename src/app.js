@@ -17,10 +17,14 @@ const SAMPLE_RADIUS = 6;
 const CLOSE_UP_ZOOM = 3;
 const API_KEY_STORAGE = "shadeFinder.apiKey";
 const MAX_MATCHES = 6;
+const NO_PHOTO_RESULTS_TEXT = "Your matches will show up here after you add a photo and tap a shade.";
+const NO_PHOTO_STATUS_TEXT = "Add a photo to see what product it might be.";
 
 const photoInput = document.getElementById("photo-input");
 const uploadError = document.getElementById("upload-error");
 const photoArea = document.getElementById("photo-area");
+const startOverButton = document.getElementById("start-over");
+const uploadHeading = document.getElementById("upload-heading");
 const photoWarning = document.getElementById("photo-warning");
 const canvas = document.getElementById("photo-canvas");
 const sampleMarker = document.getElementById("sample-marker");
@@ -314,6 +318,9 @@ function renderResults() {
   resultsList.replaceChildren();
   if (!pickedColor) {
     resultsEmpty.hidden = false;
+    resultsEmpty.textContent = NO_PHOTO_RESULTS_TEXT;
+    preferencesSummary.hidden = true;
+    renderColorGuess([]);
     return;
   }
 
@@ -536,6 +543,39 @@ async function restoreSearch() {
   }
 }
 
+// Clears the current product (photo, tapped color, brand, price, and matches)
+// after the user confirms, so they can add another. Saved shades and "What
+// matters to you?" choices stay.
+function startOver() {
+  const confirmed = window.confirm(
+    "Clear this photo and start over with a new product? Your saved shades and choices will stay.",
+  );
+  if (!confirmed) {
+    return;
+  }
+  // Drop any AI answer still on its way for the old photo.
+  latestIdentification += 1;
+  pickedColor = null;
+  pickedSpot = null;
+  originalPhotoSize = null;
+  photoInput.value = "";
+  brandInput.value = "";
+  paidPriceInput.value = "";
+  photoArea.hidden = true;
+  sampleMarker.hidden = true;
+  photoWarning.hidden = true;
+  uploadError.hidden = true;
+  identificationResult.replaceChildren();
+  identificationStatus.classList.remove("error");
+  identificationStatus.textContent = NO_PHOTO_STATUS_TEXT;
+  identificationStatus.hidden = false;
+  forgetSearch();
+  renderBrandCheck();
+  renderResults();
+  uploadHeading.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+startOverButton.addEventListener("click", startOver);
 window.addEventListener("pagehide", rememberCurrentSearch);
 
 showPreferences(loadPreferences());
