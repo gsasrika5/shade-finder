@@ -10,6 +10,7 @@ import { products } from "./products.js";
 import { addRecentProduct, loadRecentProducts, storeRecentProducts } from "./recent-products.js";
 import { isSaved, loadSavedShades, storeSavedShades, toggleSavedShade } from "./saved-shades.js";
 import { parsePaidPrice, savingsLabel } from "./savings.js";
+import { loadSortChoice, saveSortChoice, sortMatches } from "./sorting.js";
 import { splitSwatch } from "./swatch.js";
 
 const MAX_PHOTO_WIDTH = 800;
@@ -37,6 +38,7 @@ const pickedName = document.getElementById("picked-name");
 const pickedZoom = document.getElementById("picked-zoom");
 const packagingTip = document.getElementById("packaging-tip");
 const categorySelect = document.getElementById("category-select");
+const sortSelect = document.getElementById("sort-select");
 const resultsEmpty = document.getElementById("results-empty");
 const resultsList = document.getElementById("results-list");
 const keyForm = document.getElementById("ai-key-form");
@@ -335,7 +337,7 @@ function renderResults() {
     limit: Infinity,
   });
   renderColorGuess(closeMatches);
-  const matches = orderByPreferences(closeMatches, currentPreferences());
+  const matches = sortMatches(orderByPreferences(closeMatches, currentPreferences()), sortSelect.value);
   resultsEmpty.hidden = matches.length > 0;
   resultsEmpty.textContent =
     "No close matches for this shade yet. Try tapping a different spot, or pick another product type.";
@@ -458,6 +460,10 @@ canvas.addEventListener("click", (event) => {
 });
 
 categorySelect.addEventListener("change", renderResults);
+sortSelect.addEventListener("change", () => {
+  saveSortChoice(sortSelect.value);
+  renderResults();
+});
 paidPriceInput.addEventListener("input", renderResults);
 for (const preferenceInput of [crueltyFreeCheckbox, noDyesCheckbox, veganCheckbox, maxPriceInput, undertoneSelect]) {
   preferenceInput.addEventListener("input", () => {
@@ -648,6 +654,7 @@ addAnotherButton.addEventListener("click", addAnotherProduct);
 window.addEventListener("pagehide", rememberCurrentSearch);
 
 showPreferences(loadPreferences());
+sortSelect.value = loadSortChoice();
 renderSavedLink();
 showKeyStatus();
 renderRecentProducts();

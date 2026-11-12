@@ -133,15 +133,24 @@
       <section class="results" aria-labelledby="results-heading">
         <div class="results-header">
           <h2 id="results-heading">3. Match by color</h2>
-          <label>
-            Product type
-            <select id="category-select" aria-describedby="filter-note">
-              <option value="all">All products</option>
-              <option value="lipstick">Lipstick</option>
-              <option value="foundation">Foundation</option>
-              <option value="blush">Blush</option>
-            </select>
-          </label>
+          <div class="results-controls">
+            <label>
+              Product type
+              <select id="category-select" aria-describedby="filter-note">
+                <option value="all">All products</option>
+                <option value="lipstick">Lipstick</option>
+                <option value="foundation">Foundation</option>
+                <option value="blush">Blush</option>
+              </select>
+            </label>
+            <label>
+              Sort by
+              <select id="sort-select">
+                <option value="closest">Closest match</option>
+                <option value="price">Lowest price</option>
+              </select>
+            </label>
+          </div>
         </div>
         <p id="filter-note" class="hint">Pick a product type to narrow the matches.</p>
         <fieldset id="preferences" class="preferences">

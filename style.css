@@ -168,6 +168,12 @@ canvas {
   gap: 8px;
 }
 
+.results-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+
 select {
   font: inherit;
   padding: 6px 8px;
