@@ -16,13 +16,15 @@ export function animalTestingBadge(status) {
   return badge;
 }
 
-export function ingredientList(ingredients) {
+// Lists the ingredients, flagging the ones worth watching. Makeup flags dyes;
+// skincare passes its own rule and calls them "ingredients" instead.
+export function ingredientList(ingredients, { warningFor = dyeWarning, watchedName = "dye" } = {}) {
   const list = document.createElement("ul");
   list.className = "ingredient-list";
   let flaggedCount = 0;
   for (const ingredient of ingredients) {
     const item = document.createElement("li");
-    const warning = dyeWarning(ingredient);
+    const warning = warningFor(ingredient);
     if (warning) {
       flaggedCount += 1;
       item.className = "ingredient-flagged";
@@ -36,7 +38,9 @@ export function ingredientList(ingredients) {
   const summary = document.createElement("p");
   summary.className = "dye-summary";
   summary.textContent =
-    flaggedCount === 0 ? "No dyes to watch." : `${flaggedCount} ${flaggedCount === 1 ? "dye" : "dyes"} to watch.`;
+    flaggedCount === 0
+      ? `No ${watchedName}s to watch.`
+      : `${flaggedCount} ${flaggedCount === 1 ? watchedName : `${watchedName}s`} to watch.`;
 
   const fragment = document.createDocumentFragment();
   fragment.append(summary, list);

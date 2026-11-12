@@ -680,3 +680,100 @@ button.secondary {
   border-radius: 50%;
   border: 1px solid var(--border);
 }
+
+.app-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+  padding: 4px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 999px;
+  width: fit-content;
+}
+
+.app-tabs a {
+  padding: 8px 16px;
+  border-radius: 999px;
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.app-tabs a[aria-current="page"] {
+  background: var(--accent);
+  color: white;
+}
+
+.skincare-search-results {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.skincare-result {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  text-align: left;
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  font-weight: 500;
+}
+
+.skincare-selected {
+  margin-bottom: 16px;
+}
+
+.skincare-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+.skincare-key {
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+.ingredient-check {
+  margin-top: 6px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.ingredient-check p {
+  margin: 0;
+  font-weight: 600;
+}
+
+.ingredient-check ul {
+  margin: 4px 0 0;
+  padding-left: 1.2em;
+}
+
+.ingredient-check.gentle {
+  background: #e8f5ec;
+  color: #1a5c2e;
+}
+
+.ingredient-check.watch {
+  background: #fdf3d7;
+  color: #6b4e00;
+}
+
+.gentle-only {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.gentle-only input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent);
+}

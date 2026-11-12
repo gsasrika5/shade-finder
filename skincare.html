@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Skincare Atelier</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <nav class="app-tabs" aria-label="Makeup or skincare">
+        <a href="index.html">💄 Makeup</a>
+        <a href="skincare.html" aria-current="page">🧴 Skincare</a>
+      </nav>
+      <h1>Skincare Atelier</h1>
+      <p class="tagline">Find affordable alternatives to skincare you already own or love.</p>
+      <div class="intro">
+        <p class="intro-lead">
+          <strong>Search for a skincare product</strong>, like a serum, moisturizer, or sunscreen.
+          Skincare Atelier shows you:
+        </p>
+        <ul class="intro-results">
+          <li><strong>Cheaper products</strong> of the same type from other brands</li>
+          <li>Which <strong>key ingredients</strong> they share with yours</li>
+          <li>How much you'd <strong>save</strong></li>
+          <li>Which <strong>ingredients to watch</strong> each product has, like fragrance or parabens</li>
+          <li>Each product's <strong>ingredients</strong> and whether the brand is <strong>cruelty-free</strong></li>
+        </ul>
+      </div>
+    </header>
+
+    <main>
+      <section aria-labelledby="skincare-search-heading">
+        <h2 id="skincare-search-heading">1. Find your product</h2>
+        <label class="brand-field" for="skincare-search">
+          Product or brand name
+          <input id="skincare-search" type="search" autocomplete="off" placeholder="e.g. Glow Serum" />
+        </label>
+        <p id="skincare-search-hint" class="hint">Start typing, then tap your product in the list.</p>
+        <ul id="skincare-search-results" class="skincare-search-results"></ul>
+      </section>
+
+      <section aria-labelledby="skincare-dupes-heading">
+        <h2 id="skincare-dupes-heading">2. Cheaper dupes</h2>
+        <label class="gentle-only">
+          <input id="skincare-gentle-only" type="checkbox" />
+          Only show dupes with no ingredients to watch
+        </label>
+        <p class="hint">
+          Ingredients to watch are ones people with sensitive skin often avoid. They're allowed in
+          skincare and fine for many people; the reason for each is shown so you can decide.
+        </p>
+        <div id="skincare-selected" class="skincare-selected" hidden></div>
+        <p id="skincare-dupes-empty" class="empty">Your dupes will show up here after you pick a product.</p>
+        <ul id="skincare-dupes" class="results-list"></ul>
+      </section>
+    </main>
+
+    <script type="module" src="src/skincare-page.js"></script>
+  </body>
+</html>

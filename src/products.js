@@ -11,7 +11,7 @@ const sampleIngredients = {
 
 // Made-up animal testing status for each sample brand, so the app can show it
 // until real products bring real brand policies.
-const sampleAnimalTesting = {
+export const sampleAnimalTesting = {
   "Luxe Atelier": "tested",
   "Daily Glow": "cruelty-free",
   "Petal Lab": "cruelty-free",
