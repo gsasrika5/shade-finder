@@ -854,3 +854,9 @@ button.secondary {
   color: var(--muted);
   font-size: 0.9rem;
 }
+
+/* A small reminder wherever ingredients are flagged that the reasons haven't
+   been checked against official sources. */
+.flags-note {
+  font-size: 0.85rem;
+}

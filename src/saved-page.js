@@ -8,6 +8,7 @@ import { splitSwatch } from "./swatch.js";
 
 const savedList = document.getElementById("saved-list");
 const savedEmpty = document.getElementById("saved-empty");
+const flagsNote = document.getElementById("saved-flags-note");
 
 let savedShades = loadSavedShades();
 
@@ -70,6 +71,7 @@ function renderSavedShades() {
     .map((shade) => ({ shade, product: products.find((product) => product.id === shade.id) }))
     .filter(({ product }) => product);
   savedEmpty.hidden = savedEntries.length > 0;
+  flagsNote.hidden = savedEntries.length === 0;
   savedList.replaceChildren(...savedEntries.map(({ shade, product }) => savedCard(shade, product)));
 }
 
