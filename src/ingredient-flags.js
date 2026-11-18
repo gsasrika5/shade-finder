@@ -67,6 +67,39 @@ const skincareIngredientsToWatch = [
     pattern: /\bsodium laur(yl|eth) sulfate\b/i,
     reason: "A strong cleanser that can strip and dry out skin.",
   },
+  {
+    pattern: /\bformaldehyde\b|\bformalin\b|\bmethylene glycol\b/i,
+    reason: "Formaldehyde itself: a strong irritant and allergen that is also linked to cancer at high exposure.",
+  },
+  {
+    pattern: /\bmethyl(chloro)?isothiazolinone\b/i,
+    reason: "A preservative that is one of the most common causes of skin allergies.",
+  },
+  {
+    pattern: /\btriclosan\b|\btriclocarban\b/i,
+    reason: "An antibacterial the FDA removed from soaps in 2016 over safety questions.",
+  },
+  {
+    pattern: /\bhydroquinone\b/i,
+    reason: "A skin lightener that is prescription-only in the US; it can irritate and, with long use, darken skin.",
+  },
+  {
+    pattern: /\bmercur(y|ic|ous)\b|\bthimerosal\b|\bcalomel\b/i,
+    reason: "Mercury can be poisonous; it's banned in US skincare but turns up in some imported skin lighteners.",
+  },
+  {
+    pattern: /phthalate\b/i,
+    reason: "A group of chemicals some people avoid over concerns about hormone effects.",
+  },
+  // Only the full name: in skincare "BHA" usually means salicylic acid.
+  {
+    pattern: /\bbutylated hydroxyanisole\b/i,
+    reason: "A preservative listed as a possible cause of cancer; some people avoid it.",
+  },
+  {
+    pattern: /\b(limonene|linalool|citral|geraniol|eugenol|isoeugenol|coumarin|citronellol|cinnamal|hydroxycitronellal)\b/i,
+    reason: "A fragrance allergen that EU labels must name; it can irritate sensitive skin.",
+  },
 ];
 
 // Returns why a skincare ingredient is worth watching (including dyes), or

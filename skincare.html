@@ -54,8 +54,26 @@
         <p id="skincare-dupes-empty" class="empty">Your dupes will show up here after you pick a product.</p>
         <ul id="skincare-dupes" class="results-list"></ul>
       </section>
+
+      <section aria-labelledby="online-lookup-heading">
+        <h2 id="online-lookup-heading">3. Check any product's ingredients</h2>
+        <p class="hint">
+          Not in our list? Search the internet's free Open Beauty Facts database for any skincare
+          product and see its ingredients, with the ones to watch flagged.
+        </p>
+        <form id="online-lookup-form" class="online-lookup-form">
+          <label class="brand-field" for="online-lookup-input">
+            Product name and brand
+            <input id="online-lookup-input" type="search" autocomplete="off" placeholder="e.g. CeraVe Moisturizing Cream" />
+          </label>
+          <button id="online-lookup-button" type="submit">Look up ingredients</button>
+        </form>
+        <p id="online-lookup-status" class="hint" role="status"></p>
+        <ul id="online-lookup-results" class="results-list online-lookup-results"></ul>
+      </section>
     </main>
 
     <script type="module" src="src/skincare-page.js"></script>
+    <script type="module" src="src/online-lookup-page.js"></script>
   </body>
 </html>
