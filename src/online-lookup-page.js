@@ -1,8 +1,9 @@
-// The "Check any product's ingredients" section of the Skincare tab: search
-// Open Beauty Facts and show each product's ingredients with the ones to watch
-// flagged.
+// The "Check any product's ingredients" section of the Skincare tab: scan a
+// barcode or search Open Beauty Facts by name, and show each product's
+// ingredients with the ones to watch flagged.
+import { cameraProblem, startScanning } from "./barcode-scanner.js";
 import { skincareWarning } from "./ingredient-flags.js";
-import { searchWithFallback } from "./online-lookup.js";
+import { cleanBarcode, lookUpBarcode, searchWithFallback } from "./online-lookup.js";
 import { ingredientCheck, ingredientList } from "./product-details.js";
 import { ingredientsToWatch } from "./skincare-match.js";
 
@@ -11,6 +12,16 @@ const input = document.getElementById("online-lookup-input");
 const button = document.getElementById("online-lookup-button");
 const statusText = document.getElementById("online-lookup-status");
 const resultsList = document.getElementById("online-lookup-results");
+const scanButton = document.getElementById("barcode-scan-button");
+const camera = document.getElementById("barcode-camera");
+const video = document.getElementById("barcode-video");
+const cancelButton = document.getElementById("barcode-cancel");
+const typedBarcode = document.getElementById("barcode-typed");
+const barcodeForm = document.getElementById("barcode-form");
+const barcodeInput = document.getElementById("barcode-input");
+const barcodeButton = document.getElementById("barcode-button");
+const unreachable = "Couldn't reach the ingredient database. Check your internet connection and try again.";
+let stopCamera = null;
 
 function onlineProductCard(product) {
   const item = document.createElement("li");
@@ -68,10 +79,84 @@ async function lookUp(event) {
     statusText.textContent = lookupStatus(query, products.length, searchedFor);
     resultsList.replaceChildren(...products.map(onlineProductCard));
   } catch {
-    statusText.textContent = "Couldn't reach the ingredient database. Check your internet connection and try again.";
+    statusText.textContent = unreachable;
   } finally {
     button.disabled = false;
   }
 }
 
-form.addEventListener("submit", lookUp);
+// What a barcode lookup found, pointing to the name search when it found
+// nothing useful.
+function barcodeStatus(barcode, result) {
+  if (result.status === "found") {
+    return `Found barcode ${barcode}. Ingredients to watch are marked ⚠️.`;
+  }
+  if (result.status === "no-ingredients") {
+    return `${result.name} (barcode ${barcode}) is in the database, but without an ingredient list yet. Try searching by name below.`;
+  }
+  return `Barcode ${barcode} isn't in the database yet. Try searching by the product's name below.`;
+}
+
+async function showBarcode(barcode) {
+  barcodeButton.disabled = true;
+  statusText.textContent = `Looking up barcode ${barcode}…`;
+  resultsList.replaceChildren();
+  try {
+    const result = await lookUpBarcode(barcode);
+    statusText.textContent = barcodeStatus(barcode, result);
+    if (result.status === "found") {
+      resultsList.replaceChildren(onlineProductCard(result.product));
+    }
+  } catch {
+    statusText.textContent = unreachable;
+  } finally {
+    barcodeButton.disabled = false;
+  }
+}
+
+function closeCamera() {
+  stopCamera?.();
+  stopCamera = null;
+  camera.hidden = true;
+  scanButton.hidden = false;
+}
+
+async function openCamera() {
+  scanButton.hidden = true;
+  camera.hidden = false;
+  statusText.textContent = "Starting the camera…";
+  resultsList.replaceChildren();
+  try {
+    stopCamera = await startScanning(video, (barcode) => {
+      closeCamera();
+      showBarcode(barcode);
+    });
+    statusText.textContent = "";
+  } catch (error) {
+    closeCamera();
+    statusText.textContent = cameraProblem(error);
+    typedBarcode.open = true;
+  }
+}
+
+function lookUpTypedBarcode(event) {
+  event.preventDefault();
+  const barcode = cleanBarcode(barcodeInput.value);
+  if (!barcode) {
+    resultsList.replaceChildren();
+    statusText.textContent = "A barcode number is 8 to 14 digits. Check the digits under the lines and try again.";
+    return;
+  }
+  showBarcode(barcode);
+}
+
+form.addEventListener("submit", (event) => {
+  closeCamera();
+  lookUp(event);
+});
+scanButton.addEventListener("click", openCamera);
+cancelButton.addEventListener("click", () => {
+  closeCamera();
+  statusText.textContent = "";
+});
+barcodeForm.addEventListener("submit", lookUpTypedBarcode);

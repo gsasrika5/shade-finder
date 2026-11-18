@@ -1,6 +1,8 @@
 // Looks up real skincare products and their ingredient lists on Open Beauty
 // Facts, a free, open database of cosmetics that anyone can add to.
 const SEARCH_URL = "https://world.openbeautyfacts.org/cgi/search.pl";
+const PRODUCT_URL = "https://world.openbeautyfacts.org/api/v2/product";
+const PRODUCT_FIELDS = "product_name,brands,ingredients_text,image_front_small_url";
 const MAX_RESULTS = 5;
 
 // Splits a label's ingredient text into single ingredients. Commas inside
@@ -98,22 +100,60 @@ export async function searchProductsOnline(query) {
     search_simple: "1",
     json: "1",
     page_size: "50",
-    fields: "product_name,brands,ingredients_text,image_front_small_url",
+    fields: PRODUCT_FIELDS,
   });
   const response = await fetch(`${SEARCH_URL}?${params}`);
   if (!response.ok) {
     throw new Error(`Open Beauty Facts answered ${response.status}`);
   }
   const data = await response.json();
-  const products = (data.products ?? [])
-    .filter((product) => product.product_name && product.ingredients_text)
-    .map((product) => ({
-      name: product.product_name,
-      brand: product.brands || "Unknown brand",
-      imageUrl: product.image_front_small_url ?? null,
-      ingredients: splitIngredients(product.ingredients_text),
-    }));
+  const products = (data.products ?? []).filter(hasIngredients).map(toProduct);
   return uniqueProducts(products).slice(0, MAX_RESULTS);
+}
+
+function hasIngredients(product) {
+  return Boolean(product.product_name && product.ingredients_text);
+}
+
+// Turns an Open Beauty Facts product into { name, brand, imageUrl, ingredients }.
+function toProduct(product) {
+  return {
+    name: product.product_name,
+    brand: product.brands || "Unknown brand",
+    imageUrl: product.image_front_small_url ?? null,
+    ingredients: splitIngredients(product.ingredients_text),
+  };
+}
+
+// Product barcodes (UPC and EAN) are 8 to 14 digits. Spaces and dashes people
+// type between groups of digits are ignored. Returns the digits, or null if it
+// can't be a barcode.
+export function cleanBarcode(text) {
+  const digits = text.replace(/[\s-]/g, "");
+  return /^\d{8,14}$/.test(digits) ? digits : null;
+}
+
+// Looks up the one product with this barcode. Returns { status: "found",
+// product }, { status: "not-found" } when the database doesn't have it, or
+// { status: "no-ingredients", name } when it does but without an ingredient
+// list. Throws if the database can't be reached.
+export async function lookUpBarcode(barcode) {
+  const params = new URLSearchParams({ fields: PRODUCT_FIELDS });
+  const response = await fetch(`${PRODUCT_URL}/${encodeURIComponent(barcode)}.json?${params}`);
+  if (response.status === 404) {
+    return { status: "not-found" };
+  }
+  if (!response.ok) {
+    throw new Error(`Open Beauty Facts answered ${response.status}`);
+  }
+  const data = await response.json();
+  if (data.status !== 1 || !data.product) {
+    return { status: "not-found" };
+  }
+  if (!hasIngredients(data.product)) {
+    return { status: "no-ingredients", name: data.product.product_name || "This product" };
+  }
+  return { status: "found", product: toProduct(data.product) };
 }
 
 // Searches for the whole name first. If nothing is found, drops words from

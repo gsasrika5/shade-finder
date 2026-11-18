@@ -67,6 +67,28 @@
           with the wrong ingredients. Ingredients to watch are general guidance, not medical advice. Always
           check the label on the product itself.
         </p>
+        <div class="barcode-scan">
+          <button id="barcode-scan-button" type="button">📷 Scan barcode</button>
+          <div id="barcode-camera" class="barcode-camera" hidden>
+            <div class="barcode-viewfinder">
+              <video id="barcode-video" muted playsinline aria-label="Camera view for scanning a barcode"></video>
+              <div class="barcode-frame" aria-hidden="true"></div>
+            </div>
+            <p class="hint">Hold the barcode inside the box. It scans by itself.</p>
+            <button id="barcode-cancel" type="button" class="secondary">Cancel</button>
+          </div>
+          <details id="barcode-typed" class="barcode-typed">
+            <summary>Type the barcode number instead</summary>
+            <form id="barcode-form" class="online-lookup-form">
+              <label class="brand-field" for="barcode-input">
+                Barcode number (the digits under the lines)
+                <input id="barcode-input" inputmode="numeric" autocomplete="off" placeholder="3337875597197" />
+              </label>
+              <button id="barcode-button" type="submit">Look up barcode</button>
+            </form>
+          </details>
+        </div>
+        <p class="lookup-or">or search by name</p>
         <form id="online-lookup-form" class="online-lookup-form">
           <label class="brand-field" for="online-lookup-input">
             Product name and brand

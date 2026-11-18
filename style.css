@@ -802,3 +802,55 @@ button.secondary {
   background: #f6f4fb;
   font-size: 0.9rem;
 }
+
+/* Barcode scanning: the live camera with a box to hold the barcode in. */
+.barcode-scan {
+  margin: 4px 0 10px;
+}
+
+.barcode-camera[hidden] {
+  display: none;
+}
+
+.barcode-viewfinder {
+  position: relative;
+  max-width: 420px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #222;
+}
+
+.barcode-viewfinder video {
+  display: block;
+  width: 100%;
+  max-height: 60vh;
+  object-fit: cover;
+}
+
+.barcode-frame {
+  position: absolute;
+  inset: 32% 10%;
+  border: 3px solid white;
+  border-radius: 8px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.35);
+}
+
+.barcode-typed {
+  margin-top: 10px;
+}
+
+.barcode-typed summary {
+  cursor: pointer;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.barcode-typed form {
+  margin-top: 8px;
+}
+
+.lookup-or {
+  margin: 14px 0 6px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
