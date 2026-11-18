@@ -1,6 +1,8 @@
 // "My products": real skincare products the user saved from a scan or a name
 // search, kept on this device so they can be checked against the avoid list
 // any time.
+import { isDateText, SHELF_LIFE_CHOICES } from "./expiry.js";
+
 const MY_PRODUCTS_STORAGE = "shadeFinder.myProducts";
 const CHANGE_EVENT = "shadeFinder:myProductsChange";
 export const MAX_MY_PRODUCTS = 30;
@@ -9,6 +11,13 @@ export const MAX_MY_PRODUCTS = 30;
 export const REACTIONS = ["good", "irritated"];
 // A short note of the user's own, like "too greasy" or "$12 at Target".
 export const MAX_NOTE_LENGTH = 200;
+
+// { openedOn, shelfLifeMonths } when both are valid, otherwise both null.
+function cleanOpened({ openedOn, shelfLifeMonths }) {
+  return isDateText(openedOn) && SHELF_LIFE_CHOICES.includes(shelfLifeMonths)
+    ? { openedOn, shelfLifeMonths }
+    : { openedOn: null, shelfLifeMonths: null };
+}
 
 function cleanNote(text) {
   return typeof text === "string" ? text.trim().slice(0, MAX_NOTE_LENGTH) : "";
@@ -31,7 +40,8 @@ function isSavedProduct(value) {
 
 // Browser storage can be blocked (for example in private windows), or hold
 // something unexpected; then the list starts empty, skipping broken entries,
-// an unknown reaction counts as not marked, and a broken note as no note.
+// an unknown reaction counts as not marked, a broken note as no note, and a
+// broken opened date as none.
 export function loadMyProducts() {
   try {
     const saved = JSON.parse(localStorage.getItem(MY_PRODUCTS_STORAGE));
@@ -43,6 +53,7 @@ export function loadMyProducts() {
             ...product,
             reaction: REACTIONS.includes(product.reaction) ? product.reaction : null,
             note: cleanNote(product.note),
+            ...cleanOpened(product),
           }))
       : [];
   } catch {
@@ -79,7 +90,10 @@ export function addToMyProducts(myProducts, product) {
     return null;
   }
   const { barcode = null, name, brand, imageUrl = null, ingredients } = product;
-  return [{ barcode, name, brand, imageUrl, ingredients, reaction: null, note: "" }, ...myProducts];
+  return [
+    { barcode, name, brand, imageUrl, ingredients, reaction: null, note: "", openedOn: null, shelfLifeMonths: null },
+    ...myProducts,
+  ];
 }
 
 // Saves the user's note on a product, trimmed and cut to MAX_NOTE_LENGTH. An
@@ -87,6 +101,14 @@ export function addToMyProducts(myProducts, product) {
 export function setNote(myProducts, product, text) {
   const id = productId(product);
   return myProducts.map((saved) => (productId(saved) === id ? { ...saved, note: cleanNote(text) } : saved));
+}
+
+// Records when the user opened a product and how many months it lasts after
+// opening. Passing a null date clears both.
+export function setOpened(myProducts, product, openedOn, shelfLifeMonths) {
+  const id = productId(product);
+  const opened = openedOn === null ? { openedOn: null, shelfLifeMonths: null } : cleanOpened({ openedOn, shelfLifeMonths });
+  return myProducts.map((saved) => (productId(saved) === id ? { ...saved, ...opened } : saved));
 }
 
 // Marks how a saved product worked for the user. Choosing the same reaction

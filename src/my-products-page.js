@@ -3,6 +3,15 @@
 // Remove button that takes out just that one (with Undo). Above them, "What's irritating my skin?" lists
 // ingredients the irritating products share, to add to the avoid list.
 import { loadAvoidList, onAvoidListChange, saveAvoidList, validateCustom } from "./avoid-list.js";
+import {
+  DEFAULT_SHELF_LIFE,
+  expiryStatus,
+  expirySummary,
+  formatDate,
+  openedDateProblem,
+  SHELF_LIFE_CHOICES,
+  todayText,
+} from "./expiry.js";
 import { findSuspects, MIN_IRRITATED } from "./irritation.js";
 import {
   loadMyProducts,
@@ -12,6 +21,7 @@ import {
   removeFromMyProducts,
   saveMyProducts,
   setNote,
+  setOpened,
   setReaction,
 } from "./my-products.js";
 import { realProductCard } from "./real-product-card.js";
@@ -22,6 +32,7 @@ const statusText = document.getElementById("my-products-status");
 const list = document.getElementById("my-products-list");
 const irritationSummary = document.getElementById("irritation-summary");
 const suspectList = document.getElementById("irritation-suspects");
+const expirySummaryText = document.getElementById("expiry-summary");
 
 let myProducts = loadMyProducts();
 let avoidList = loadAvoidList();
@@ -29,6 +40,8 @@ let avoidList = loadAvoidList();
 // editor survives the page redrawing (say, when the avoid list changes).
 let editingId = null;
 let noteDraft = "";
+// The product whose opened date is being picked.
+let editingOpenedId = null;
 
 function showRemoved(product, index) {
   const undo = document.createElement("button");
@@ -158,9 +171,121 @@ function noteArea(product) {
   return area;
 }
 
+function openedEditor(product) {
+  const today = todayText();
+  const form = document.createElement("form");
+  form.className = "opened-editor";
+  // The app checks the date itself, so every browser shows the same message
+  // (some phones don't show the browser's own one).
+  form.noValidate = true;
+  const dateLabel = document.createElement("label");
+  dateLabel.textContent = "Opened on ";
+  const dateInput = document.createElement("input");
+  dateInput.type = "date";
+  dateInput.className = "opened-date";
+  dateInput.max = today;
+  dateInput.value = product.openedOn ?? today;
+  dateLabel.append(dateInput);
+
+  const monthsLabel = document.createElement("label");
+  monthsLabel.textContent = "Lasts after opening ";
+  const monthsSelect = document.createElement("select");
+  monthsSelect.className = "shelf-life";
+  for (const months of SHELF_LIFE_CHOICES) {
+    const option = document.createElement("option");
+    option.value = String(months);
+    option.textContent = `${months} months (${months}M)`;
+    monthsSelect.append(option);
+  }
+  monthsSelect.value = String(product.shelfLifeMonths ?? DEFAULT_SHELF_LIFE);
+  monthsLabel.append(monthsSelect);
+
+  const tip = document.createElement("p");
+  tip.className = "hint";
+  tip.textContent = "Look for the open-jar symbol on the package, like 12M.";
+  const problem = document.createElement("p");
+  problem.className = "opened-problem";
+  problem.setAttribute("role", "status");
+
+  const save = document.createElement("button");
+  save.type = "submit";
+  save.className = "opened-save";
+  save.textContent = "Save date";
+  const cancel = document.createElement("button");
+  cancel.type = "button";
+  cancel.className = "secondary opened-cancel";
+  cancel.textContent = "Cancel";
+  cancel.addEventListener("click", () => {
+    editingOpenedId = null;
+    render();
+  });
+  const buttons = document.createElement("div");
+  buttons.className = "note-buttons";
+  buttons.append(save, cancel);
+  if (product.openedOn) {
+    const clear = document.createElement("button");
+    clear.type = "button";
+    clear.className = "secondary opened-clear";
+    clear.textContent = "Clear date";
+    clear.addEventListener("click", () => {
+      editingOpenedId = null;
+      saveMyProducts(setOpened(myProducts, product, null, null));
+    });
+    buttons.append(clear);
+  }
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const dateProblem = openedDateProblem(dateInput.value, today);
+    if (dateProblem) {
+      problem.textContent = dateProblem;
+      return;
+    }
+    editingOpenedId = null;
+    saveMyProducts(setOpened(myProducts, product, dateInput.value, Number(monthsSelect.value)));
+  });
+  form.append(dateLabel, monthsLabel, tip, problem, buttons);
+  return form;
+}
+
+// "Opened Nov 18, 2026 · good until Nov 18, 2027" with how long is left, or a
+// button to add the date.
+function openedArea(product) {
+  if (productId(product) === editingOpenedId) {
+    return openedEditor(product);
+  }
+  const area = document.createElement("div");
+  area.className = "opened-area";
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "secondary opened-button";
+  if (product.openedOn) {
+    const status = expiryStatus(product.openedOn, product.shelfLifeMonths, todayText());
+    const line = document.createElement("p");
+    line.className = `expiry expiry-${status.state}`;
+    const icons = { good: "🟢", soon: "🟠", expired: "🔴" };
+    line.textContent = `${icons[status.state]} ${status.text}`;
+    const dates = document.createElement("p");
+    dates.className = "expiry-dates";
+    dates.textContent = `Opened ${formatDate(product.openedOn)} · good until ${formatDate(status.expiresOn)}`;
+    area.append(line, dates);
+    button.textContent = "Change date";
+  } else {
+    button.textContent = "📅 Add opened date";
+  }
+  button.setAttribute("aria-label", `${product.openedOn ? "Change" : "Add"} the date you opened ${product.name}`);
+  button.addEventListener("click", () => {
+    editingOpenedId = productId(product);
+    render();
+    list.querySelector(".opened-date")?.focus();
+  });
+  area.append(button);
+  return area;
+}
+
 function cardActions(product) {
   const actions = document.createElement("div");
-  actions.append(noteArea(product), reactionButtons(product), removeButton(product));
+  actions.append(openedArea(product), noteArea(product), reactionButtons(product), removeButton(product));
   return actions;
 }
 
@@ -226,6 +351,8 @@ function renderIrritation() {
 // the last product was removed.
 function render() {
   countText.textContent = String(myProducts.length);
+  expirySummaryText.textContent = expirySummary(myProducts, todayText());
+  expirySummaryText.hidden = expirySummaryText.textContent === "";
   list.replaceChildren(...myProducts.map((product) => realProductCard(product, avoidList, cardActions(product))));
   renderIrritation();
   section.hidden = myProducts.length === 0 && statusText.childElementCount === 0;

@@ -1119,3 +1119,68 @@ section > h3 {
   white-space: nowrap;
   color: var(--accent);
 }
+
+/* Opened dates and expiry. */
+.opened-area,
+.opened-editor {
+  margin-top: 8px;
+}
+
+.product-info .expiry {
+  font-weight: 600;
+}
+
+.product-info .expiry-soon {
+  color: #8a5300;
+}
+
+.product-info .expiry-expired {
+  color: #8a1c1c;
+}
+
+.product-info .expiry-dates {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.opened-editor label {
+  display: block;
+  margin: 4px 0;
+  font-size: 0.9rem;
+}
+
+.opened-editor input,
+.opened-editor select {
+  font: inherit;
+  padding: 6px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  min-height: 36px;
+}
+
+.opened-button,
+.opened-save,
+.opened-cancel,
+.opened-clear {
+  padding: 4px 12px;
+  font-size: 0.85rem;
+}
+
+.opened-problem {
+  color: #8a1c1c;
+  font-size: 0.85rem;
+}
+
+.expiry-summary {
+  margin: 6px 0;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: #fff4d6;
+  color: #6b4e00;
+  font-weight: 600;
+}
+
+.expiry-summary[hidden] {
+  display: none;
+}
