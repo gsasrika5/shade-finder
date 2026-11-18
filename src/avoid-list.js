@@ -12,21 +12,28 @@ export const MAX_CUSTOM_LENGTH = 40;
 // kind of flag added to the app later starts out checked.
 export const emptyAvoidList = Object.freeze({ okGroups: [], custom: [] });
 
-function simpleWords(text) {
+// Words labels use for the same thing, mapped to one, so "Parfum" on a list
+// catches "Fragrance" on a label and the other way around.
+const SAME_INGREDIENT = { fragrance: "parfum", eau: "aqua", water: "aqua" };
+
+// An ingredient's words in a form that compares well: lowercase, no accents
+// or punctuation, and one name for words that mean the same thing.
+export function ingredientWords(text) {
   return text
     .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
+    .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .split(/[^a-z0-9]+/)
-    .filter((word) => word !== "");
+    .filter((word) => word !== "")
+    .map((word) => SAME_INGREDIENT[word] ?? word);
 }
 
 // True if every word the user typed appears in the ingredient, so "coconut
 // oil" catches "Cocos Nucifera (Coconut) Oil" and "shea" catches "Shea Butter".
 export function matchesCustom(ingredient, entry) {
-  const ingredientWords = simpleWords(ingredient);
-  const entryWords = simpleWords(entry);
-  return entryWords.length > 0 && entryWords.every((word) => ingredientWords.includes(word));
+  const words = ingredientWords(ingredient);
+  const entryWords = ingredientWords(entry);
+  return entryWords.length > 0 && entryWords.every((word) => words.includes(word));
 }
 
 // Sorts a product's ingredients into the ones on the user's own list
@@ -71,7 +78,7 @@ export function personalWarning(avoidList = emptyAvoidList) {
 // cleaned-up text, or { problem } saying what to fix.
 export function validateCustom(text, avoidList) {
   const entry = text.trim().replace(/\s+/g, " ");
-  if (simpleWords(entry).length === 0) {
+  if (ingredientWords(entry).length === 0) {
     return { problem: "Type an ingredient name first, like coconut oil." };
   }
   if (entry.length > MAX_CUSTOM_LENGTH) {

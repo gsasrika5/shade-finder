@@ -4,6 +4,9 @@
 const MY_PRODUCTS_STORAGE = "shadeFinder.myProducts";
 const CHANGE_EVENT = "shadeFinder:myProductsChange";
 export const MAX_MY_PRODUCTS = 30;
+// How a saved product worked for the user: "good", "irritated", or null for
+// not marked yet.
+export const REACTIONS = ["good", "irritated"];
 
 // The same product found by barcode or by name gets the same id when the
 // database has its barcode; otherwise brand and name stand in.
@@ -21,11 +24,17 @@ function isSavedProduct(value) {
 }
 
 // Browser storage can be blocked (for example in private windows), or hold
-// something unexpected; then the list starts empty, skipping broken entries.
+// something unexpected; then the list starts empty, skipping broken entries,
+// and an unknown reaction counts as not marked.
 export function loadMyProducts() {
   try {
     const saved = JSON.parse(localStorage.getItem(MY_PRODUCTS_STORAGE));
-    return Array.isArray(saved) ? saved.filter(isSavedProduct).slice(0, MAX_MY_PRODUCTS) : [];
+    return Array.isArray(saved)
+      ? saved
+          .filter(isSavedProduct)
+          .slice(0, MAX_MY_PRODUCTS)
+          .map((product) => ({ ...product, reaction: REACTIONS.includes(product.reaction) ? product.reaction : null }))
+      : [];
   } catch {
     return [];
   }
@@ -60,7 +69,16 @@ export function addToMyProducts(myProducts, product) {
     return null;
   }
   const { barcode = null, name, brand, imageUrl = null, ingredients } = product;
-  return [{ barcode, name, brand, imageUrl, ingredients }, ...myProducts];
+  return [{ barcode, name, brand, imageUrl, ingredients, reaction: null }, ...myProducts];
+}
+
+// Marks how a saved product worked for the user. Choosing the same reaction
+// again clears it.
+export function setReaction(myProducts, product, reaction) {
+  const id = productId(product);
+  return myProducts.map((saved) =>
+    productId(saved) === id ? { ...saved, reaction: saved.reaction === reaction ? null : reaction } : saved,
+  );
 }
 
 // Removes just this product, keeping the others in order.
