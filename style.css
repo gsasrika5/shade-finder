@@ -791,3 +791,14 @@ button.secondary {
   object-fit: contain;
   background: #fff;
 }
+
+/* Always visible above the online search, so people know its limits before
+   they rely on a result. */
+.lookup-disclaimer {
+  margin: 10px 0 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #f6f4fb;
+  font-size: 0.9rem;
+}
