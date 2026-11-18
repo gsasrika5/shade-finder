@@ -1106,3 +1106,16 @@ section > h3 {
   font-size: 0.8rem;
   color: var(--muted);
 }
+
+/* Flag levels and their source links. Restricted ingredients stand out most. */
+[data-level="restricted"] {
+  color: #8a1c1c;
+  font-weight: 600;
+}
+
+.flag-source {
+  font-size: 0.8em;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--accent);
+}

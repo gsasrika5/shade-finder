@@ -1,6 +1,34 @@
 // Shared pieces of a product's details: its animal testing status and its
 // ingredient list with dyes to watch called out.
-import { dyeWarning } from "./ingredient-flags.js";
+import { dyeFlag, flagLevels } from "./ingredient-flags.js";
+
+const LEVEL_ORDER = ["restricted", "irritant", "debated"];
+
+// A link to where a flag's reason comes from, opening in a new tab so the
+// app keeps its place.
+function sourceLink(source) {
+  const link = document.createElement("a");
+  link.className = "flag-source";
+  link.href = source.url;
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+  link.textContent = "Source";
+  link.title = source.name;
+  link.setAttribute("aria-label", `Source: ${source.name} (opens in a new tab)`);
+  return link;
+}
+
+// Fills an element with "🚫 Mercury: reason Source", for a flag with a level,
+// reason, and source.
+function writeFlag(element, names, flag) {
+  const level = flagLevels[flag.level] ?? flagLevels.irritant;
+  element.dataset.level = flag.level;
+  element.title = level.label;
+  element.append(`${level.icon} ${names}: ${flag.reason} `);
+  if (flag.source) {
+    element.append(sourceLink(flag.source));
+  }
+}
 
 const animalTestingLabels = {
   "cruelty-free": "🐰 Cruelty-free",
@@ -18,9 +46,10 @@ export function animalTestingBadge(status) {
 
 // Lists the ingredients, flagging the ones worth watching. Makeup flags dyes;
 // skincare passes its own rule and calls them "ingredients" instead. The rule
-// returns a reason, or { avoided: true, reason } for an ingredient on the
-// user's own avoid list, which gets ⛔ and isn't counted as one to watch.
-export function ingredientList(ingredients, { warningFor = dyeWarning, watchedName = "dye" } = {}) {
+// returns a flag ({ level, reason, source }), or { avoided: true, reason } for
+// an ingredient on the user's own avoid list, which gets ⛔ and isn't counted
+// as one to watch.
+export function ingredientList(ingredients, { warningFor = dyeFlag, watchedName = "dye" } = {}) {
   const list = document.createElement("ul");
   list.className = "ingredient-list";
   let flaggedCount = 0;
@@ -33,7 +62,7 @@ export function ingredientList(ingredients, { warningFor = dyeWarning, watchedNa
     } else if (warning) {
       flaggedCount += 1;
       item.className = "ingredient-flagged";
-      item.textContent = `⚠️ ${ingredient}: ${warning}`;
+      writeFlag(item, ingredient, warning);
     } else {
       item.textContent = ingredient;
     }
@@ -72,20 +101,27 @@ export function ingredientCheck({ avoided, watched, okWith = [] }) {
 
   const heading = document.createElement("p");
   if (watched.length > 0) {
-    heading.textContent = `⚠️ ${watched.length} ${watched.length === 1 ? "ingredient" : "ingredients"} to watch:`;
+    const mostSerious = LEVEL_ORDER.find((level) => watched.some((flag) => flag.level === level)) ?? "irritant";
+    heading.textContent = `${flagLevels[mostSerious].icon} ${watched.length} ${watched.length === 1 ? "ingredient" : "ingredients"} to watch:`;
   } else {
     heading.textContent = avoided.length > 0 ? "No other ingredients to watch" : "✓ No ingredients to watch";
   }
   check.append(heading);
   if (watched.length > 0) {
     const list = document.createElement("ul");
-    const ingredientsByReason = new Map();
-    for (const { ingredient, reason } of watched) {
-      ingredientsByReason.set(reason, [...(ingredientsByReason.get(reason) ?? []), ingredient]);
+    // Most serious first, ingredients sharing a reason on one line.
+    const byReason = new Map();
+    for (const flag of watched) {
+      const line = byReason.get(flag.reason) ?? { flag, ingredients: [] };
+      line.ingredients.push(flag.ingredient);
+      byReason.set(flag.reason, line);
     }
-    for (const [reason, ingredients] of ingredientsByReason) {
+    const lines = [...byReason.values()].sort(
+      (a, b) => LEVEL_ORDER.indexOf(a.flag.level) - LEVEL_ORDER.indexOf(b.flag.level),
+    );
+    for (const { flag, ingredients } of lines) {
       const item = document.createElement("li");
-      item.textContent = `${ingredients.join(", ")}: ${reason}`;
+      writeFlag(item, ingredients.join(", "), flag);
       list.append(item);
     }
     check.append(list);

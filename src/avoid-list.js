@@ -38,7 +38,8 @@ export function matchesCustom(ingredient, entry) {
 
 // Sorts a product's ingredients into the ones on the user's own list
 // (avoided), flags they care about (watched, with a reason), and flags they
-// said they're OK with (okWith, by group name).
+// said they're OK with (okWith, by group name). Watched ingredients come as
+// { ingredient, level, reason, source }.
 export function checkIngredients(ingredients, avoidList = emptyAvoidList) {
   const avoided = [];
   const watched = [];
@@ -55,7 +56,7 @@ export function checkIngredients(ingredients, avoidList = emptyAvoidList) {
     if (avoidList.okGroups.includes(flag.group)) {
       okWith.add(skincareFlagGroups.find((group) => group.id === flag.group).label);
     } else {
-      watched.push({ ingredient, reason: flag.reason });
+      watched.push({ ingredient, level: flag.level, reason: flag.reason, source: flag.source });
     }
   }
   return { avoided, watched, okWith: [...okWith] };
@@ -70,7 +71,7 @@ export function personalWarning(avoidList = emptyAvoidList) {
       return { avoided: true, reason: "On your list of ingredients to avoid." };
     }
     const flag = skincareFlag(ingredient);
-    return flag && !avoidList.okGroups.includes(flag.group) ? flag.reason : null;
+    return flag && !avoidList.okGroups.includes(flag.group) ? flag : null;
   };
 }
 
