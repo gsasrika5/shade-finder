@@ -17,7 +17,9 @@ export function animalTestingBadge(status) {
 }
 
 // Lists the ingredients, flagging the ones worth watching. Makeup flags dyes;
-// skincare passes its own rule and calls them "ingredients" instead.
+// skincare passes its own rule and calls them "ingredients" instead. The rule
+// returns a reason, or { avoided: true, reason } for an ingredient on the
+// user's own avoid list, which gets ⛔ and isn't counted as one to watch.
 export function ingredientList(ingredients, { warningFor = dyeWarning, watchedName = "dye" } = {}) {
   const list = document.createElement("ul");
   list.className = "ingredient-list";
@@ -25,7 +27,10 @@ export function ingredientList(ingredients, { warningFor = dyeWarning, watchedNa
   for (const ingredient of ingredients) {
     const item = document.createElement("li");
     const warning = warningFor(ingredient);
-    if (warning) {
+    if (warning?.avoided) {
+      item.className = "ingredient-flagged ingredient-avoided";
+      item.textContent = `⛔ ${ingredient}: ${warning.reason}`;
+    } else if (warning) {
       flaggedCount += 1;
       item.className = "ingredient-flagged";
       item.textContent = `⚠️ ${ingredient}: ${warning}`;
@@ -47,18 +52,30 @@ export function ingredientList(ingredients, { warningFor = dyeWarning, watchedNa
   return fragment;
 }
 
-// "✓ No ingredients to watch", or the ones to watch with their reasons. Takes
-// the watched ingredients as { ingredient, reason } pairs. Ingredients with
-// the same reason share one line ("Limonene, Linalool: A fragrance allergen…")
-// so a label with many fragrance allergens doesn't repeat itself.
-export function ingredientCheck(watched) {
+// The summary at the top of a skincare card, following the user's own list:
+// "⛔ Contains 1 ingredient you avoid: Coconut Oil", then the ingredients to
+// watch with their reasons (or "✓ No ingredients to watch"), then a quiet note
+// naming flags left out because the user is OK with them. Takes the result of
+// checkIngredients. Ingredients with the same reason share one line
+// ("Limonene, Linalool: A fragrance allergen…") so a label with many fragrance
+// allergens doesn't repeat itself.
+export function ingredientCheck({ avoided, watched, okWith = [] }) {
   const check = document.createElement("div");
-  check.className = watched.length === 0 ? "ingredient-check gentle" : "ingredient-check watch";
+  const level = avoided.length > 0 ? "avoid" : watched.length > 0 ? "watch" : "gentle";
+  check.className = `ingredient-check ${level}`;
+  if (avoided.length > 0) {
+    const banner = document.createElement("p");
+    banner.className = "avoided-banner";
+    banner.textContent = `⛔ Contains ${avoided.length} ${avoided.length === 1 ? "ingredient" : "ingredients"} you avoid: ${avoided.join(", ")}`;
+    check.append(banner);
+  }
+
   const heading = document.createElement("p");
-  heading.textContent =
-    watched.length === 0
-      ? "✓ No ingredients to watch"
-      : `⚠️ ${watched.length} ${watched.length === 1 ? "ingredient" : "ingredients"} to watch:`;
+  if (watched.length > 0) {
+    heading.textContent = `⚠️ ${watched.length} ${watched.length === 1 ? "ingredient" : "ingredients"} to watch:`;
+  } else {
+    heading.textContent = avoided.length > 0 ? "No other ingredients to watch" : "✓ No ingredients to watch";
+  }
   check.append(heading);
   if (watched.length > 0) {
     const list = document.createElement("ul");
@@ -72,6 +89,13 @@ export function ingredientCheck(watched) {
       list.append(item);
     }
     check.append(list);
+  }
+
+  if (okWith.length > 0) {
+    const note = document.createElement("p");
+    note.className = "ok-with";
+    note.textContent = `Not flagged because you're OK with: ${okWith.join(", ")}`;
+    check.append(note);
   }
   return check;
 }

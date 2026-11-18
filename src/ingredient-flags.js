@@ -44,69 +44,112 @@ export function dyeWarning(ingredient) {
 // so only "alcohol denat." and "SD alcohol" count as drying alcohol.
 const skincareIngredientsToWatch = [
   {
+    group: "fragrance",
     pattern: /\bfragrance\b|\bparfum\b/i,
     reason: "A common cause of irritation and allergies for sensitive skin.",
   },
   {
+    group: "parabens",
     pattern: /paraben\b/i,
     reason: "A preservative some people avoid; it can irritate sensitive skin.",
   },
   {
+    group: "formaldehyde",
     pattern: /\bdmdm hydantoin\b|\b(imidazolidinyl|diazolidinyl) urea\b|\bquaternium-15\b|\bbronopol\b/i,
     reason: "A preservative that slowly releases small amounts of formaldehyde, which can irritate skin.",
   },
   {
+    group: "drying-alcohol",
     pattern: /\balcohol denat\.?|\bsd alcohol\b/i,
     reason: "Can dry out and irritate skin, especially high on the list.",
   },
   {
+    group: "oxybenzone",
     pattern: /\boxybenzone\b|\bbenzophenone-3\b/i,
     reason: "A sunscreen filter some people avoid for skin allergies and its effect on coral reefs.",
   },
   {
+    group: "sulfates",
     pattern: /\bsodium laur(yl|eth) sulfate\b/i,
     reason: "A strong cleanser that can strip and dry out skin.",
   },
   {
+    group: "formaldehyde",
     pattern: /\bformaldehyde\b|\bformalin\b|\bmethylene glycol\b/i,
     reason: "Formaldehyde itself: a strong irritant and allergen that is also linked to cancer at high exposure.",
   },
   {
+    group: "isothiazolinones",
     pattern: /\bmethyl(chloro)?isothiazolinone\b/i,
     reason: "A preservative that is one of the most common causes of skin allergies.",
   },
   {
+    group: "triclosan",
     pattern: /\btriclosan\b|\btriclocarban\b/i,
     reason: "An antibacterial the FDA removed from soaps in 2016 over safety questions.",
   },
   {
+    group: "hydroquinone",
     pattern: /\bhydroquinone\b/i,
     reason: "A skin lightener that is prescription-only in the US; it can irritate and, with long use, darken skin.",
   },
   {
+    group: "mercury",
     pattern: /\bmercur(y|ic|ous)\b|\bthimerosal\b|\bcalomel\b/i,
     reason: "Mercury can be poisonous; it's banned in US skincare but turns up in some imported skin lighteners.",
   },
   {
+    group: "phthalates",
     pattern: /phthalate\b/i,
     reason: "A group of chemicals some people avoid over concerns about hormone effects.",
   },
   // Only the full name: in skincare "BHA" usually means salicylic acid.
   {
+    group: "bha",
     pattern: /\bbutylated hydroxyanisole\b/i,
     reason: "A preservative listed as a possible cause of cancer; some people avoid it.",
   },
   {
+    group: "fragrance-allergens",
     pattern: /\b(limonene|linalool|citral|geraniol|eugenol|isoeugenol|coumarin|citronellol|cinnamal|hydroxycitronellal)\b/i,
     reason: "A fragrance allergen that EU labels must name; it can irritate sensitive skin.",
   },
 ];
 
+// The kinds of skincare flags, by group, with the name people see when they
+// choose which ones they care about.
+export const skincareFlagGroups = [
+  { id: "fragrance", label: "Fragrance" },
+  { id: "fragrance-allergens", label: "Fragrance allergens (limonene, linalool, and others)" },
+  { id: "parabens", label: "Parabens" },
+  { id: "formaldehyde", label: "Formaldehyde and preservatives that release it" },
+  { id: "isothiazolinones", label: "MI and MCI preservatives" },
+  { id: "drying-alcohol", label: "Drying alcohol" },
+  { id: "sulfates", label: "Sulfates" },
+  { id: "oxybenzone", label: "Oxybenzone" },
+  { id: "phthalates", label: "Phthalates" },
+  { id: "bha", label: "BHA (the preservative)" },
+  { id: "triclosan", label: "Triclosan" },
+  { id: "hydroquinone", label: "Hydroquinone" },
+  { id: "mercury", label: "Mercury" },
+  { id: "dyes", label: "Dyes" },
+];
+
+// Returns { group, reason } for a skincare ingredient worth watching
+// (including dyes), or null if it isn't on the list.
+export function skincareFlag(ingredient) {
+  const match = skincareIngredientsToWatch.find((watched) => watched.pattern.test(ingredient));
+  if (match) {
+    return { group: match.group, reason: match.reason };
+  }
+  const dyeReason = dyeWarning(ingredient);
+  return dyeReason ? { group: "dyes", reason: dyeReason } : null;
+}
+
 // Returns why a skincare ingredient is worth watching (including dyes), or
 // null if it isn't on the list.
 export function skincareWarning(ingredient) {
-  const match = skincareIngredientsToWatch.find((watched) => watched.pattern.test(ingredient));
-  return match ? match.reason : dyeWarning(ingredient);
+  return skincareFlag(ingredient)?.reason ?? null;
 }
 
 // Ingredients that come from animals, so a product with any of them isn't vegan.

@@ -1,4 +1,5 @@
 // Finding skincare dupes: same type, cheaper, and sharing key ingredients.
+import { checkIngredients, emptyAvoidList } from "./avoid-list.js";
 import { skincareWarning } from "./ingredient-flags.js";
 
 const MAX_DUPES = 5;
@@ -11,13 +12,20 @@ export function ingredientsToWatch(product) {
     .filter(({ reason }) => reason !== null);
 }
 
+// Nothing the user avoids and no flags they care about.
+function isGentle(product, avoidList) {
+  const { avoided, watched } = checkIngredients(product.ingredients, avoidList);
+  return avoided.length === 0 && watched.length === 0;
+}
+
 // Cheaper products of the same type that share at least one key ingredient,
 // most shared ingredients first, then cheapest. Each dupe lists what it shares.
-// With gentleOnly, dupes with any ingredient to watch are left out.
-export function findSkincareDupes(product, allProducts, { gentleOnly = false } = {}) {
+// With gentleOnly, dupes with any ingredient to watch or on the user's avoid
+// list are left out.
+export function findSkincareDupes(product, allProducts, { gentleOnly = false, avoidList = emptyAvoidList } = {}) {
   return allProducts
     .filter((other) => other.id !== product.id && other.type === product.type && other.price < product.price)
-    .filter((other) => !gentleOnly || ingredientsToWatch(other).length === 0)
+    .filter((other) => !gentleOnly || isGentle(other, avoidList))
     .map((other) => ({
       ...other,
       sharedIngredients: product.keyIngredients.filter((ingredient) => other.keyIngredients.includes(ingredient)),

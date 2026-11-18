@@ -30,6 +30,28 @@
     </header>
 
     <main>
+      <section aria-labelledby="avoid-heading">
+        <details id="avoid-panel" class="avoid-panel">
+          <summary><h2 id="avoid-heading">My ingredients to avoid</h2> <span id="avoid-summary" class="avoid-summary"></span></summary>
+          <p class="hint">
+            Every product below follows this list. Your choices are saved on this device.
+          </p>
+          <form id="avoid-form" class="avoid-form">
+            <label class="brand-field" for="avoid-input">
+              Add an ingredient you avoid, like one you're allergic to
+              <input id="avoid-input" autocomplete="off" maxlength="60" placeholder="e.g. coconut oil" />
+            </label>
+            <button type="submit">Add</button>
+          </form>
+          <p id="avoid-problem" class="avoid-problem" role="status"></p>
+          <ul id="avoid-custom-list" class="avoid-custom-list"></ul>
+          <fieldset class="avoid-groups">
+            <legend>Flag these ingredients to watch (uncheck any you're OK with)</legend>
+            <div id="avoid-group-list"></div>
+          </fieldset>
+        </details>
+      </section>
+
       <section aria-labelledby="skincare-search-heading">
         <h2 id="skincare-search-heading">1. Find your product</h2>
         <label class="brand-field" for="skincare-search">
@@ -44,7 +66,7 @@
         <h2 id="skincare-dupes-heading">2. Cheaper dupes</h2>
         <label class="gentle-only">
           <input id="skincare-gentle-only" type="checkbox" />
-          Only show dupes with no ingredients to watch
+          Only show dupes with no ingredients to watch or that you avoid
         </label>
         <p class="hint">
           Ingredients to watch are ones people with sensitive skin often avoid. They're allowed in
@@ -106,6 +128,7 @@
       </section>
     </main>
 
+    <script type="module" src="src/avoid-list-page.js"></script>
     <script type="module" src="src/skincare-page.js"></script>
     <script type="module" src="src/online-lookup-page.js"></script>
   </body>

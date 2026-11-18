@@ -1,9 +1,9 @@
 // The Skincare tab: search for a product you own, then see cheaper products of
 // the same type that share its key ingredients.
-import { skincareWarning } from "./ingredient-flags.js";
+import { checkIngredients, loadAvoidList, onAvoidListChange, personalWarning } from "./avoid-list.js";
 import { animalTestingBadge, ingredientCheck, ingredientList } from "./product-details.js";
 import { savingsLabel } from "./savings.js";
-import { findSkincareDupes, ingredientsToWatch, searchSkincare } from "./skincare-match.js";
+import { findSkincareDupes, searchSkincare } from "./skincare-match.js";
 import { skincareProducts } from "./skincare-products.js";
 
 // The picked product is remembered for this tab, so switching to Makeup and
@@ -20,6 +20,7 @@ const dupesList = document.getElementById("skincare-dupes");
 const gentleOnlyCheckbox = document.getElementById("skincare-gentle-only");
 
 let selectedProduct = null;
+let avoidList = loadAvoidList();
 
 function capitalize(word) {
   return word.charAt(0).toUpperCase() + word.slice(1);
@@ -81,10 +82,10 @@ function skincareCard(product, { label, shared, savings }) {
     ? `Shares ${shared.length} of ${product.matchedAgainst} key ingredients: ${shared.join(", ")}`
     : `Key ingredients: ${product.keyIngredients.join(", ")}`;
   item.querySelector(".product-meta").after(animalTestingBadge(product.animalTesting));
-  item.querySelector(".skincare-key").after(ingredientCheck(ingredientsToWatch(product)));
+  item.querySelector(".skincare-key").after(ingredientCheck(checkIngredients(product.ingredients, avoidList)));
   item
     .querySelector(".product-ingredients summary")
-    .after(ingredientList(product.ingredients, { warningFor: skincareWarning, watchedName: "ingredient" }));
+    .after(ingredientList(product.ingredients, { warningFor: personalWarning(avoidList), watchedName: "ingredient" }));
   return item;
 }
 
@@ -97,13 +98,20 @@ function selectProduct(product) {
   searchInput.value = product.name;
   searchResults.replaceChildren();
   searchHint.textContent = "Search again to pick a different product.";
+  selectedProduct = product;
+  renderSelected();
+}
 
+// Your product and its dupes, redrawn when the avoid list changes.
+function renderSelected() {
+  if (selectedProduct === null) {
+    return;
+  }
   const yours = document.createElement("ul");
   yours.className = "results-list";
-  yours.append(skincareCard(product, { label: "Your product" }));
+  yours.append(skincareCard(selectedProduct, { label: "Your product" }));
   selectedArea.replaceChildren(yours);
   selectedArea.hidden = false;
-  selectedProduct = product;
   renderDupes();
 }
 
@@ -112,10 +120,10 @@ function renderDupes() {
     return;
   }
   const gentleOnly = gentleOnlyCheckbox.checked;
-  const dupes = findSkincareDupes(selectedProduct, skincareProducts, { gentleOnly });
+  const dupes = findSkincareDupes(selectedProduct, skincareProducts, { gentleOnly, avoidList });
   dupesEmpty.hidden = dupes.length > 0;
   dupesEmpty.textContent = gentleOnly
-    ? "No cheaper dupes without ingredients to watch. Uncheck the box above to see all dupes."
+    ? "No cheaper dupes without ingredients to watch or that you avoid. Uncheck the box above to see all dupes."
     : "Nothing cheaper of this type shares its key ingredients, so it may already be a good deal.";
   dupesList.replaceChildren(
     ...dupes.map((dupe) =>
@@ -162,6 +170,10 @@ searchInput.addEventListener("input", renderSearchResults);
 gentleOnlyCheckbox.addEventListener("change", () => {
   saveGentleOnly(gentleOnlyCheckbox.checked);
   renderDupes();
+});
+onAvoidListChange((changedList) => {
+  avoidList = changedList;
+  renderSelected();
 });
 gentleOnlyCheckbox.checked = loadGentleOnly();
 restoreSelectedProduct();

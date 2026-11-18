@@ -860,3 +860,87 @@ button.secondary {
 .flags-note {
   font-size: 0.85rem;
 }
+
+/* My ingredients to avoid: a fold-out panel at the top of the Skincare tab. */
+.avoid-panel summary {
+  cursor: pointer;
+}
+
+.avoid-panel summary h2 {
+  display: inline;
+  font-size: inherit;
+  margin: 0;
+}
+
+.avoid-summary {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-left: 6px;
+}
+
+.avoid-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.avoid-form .brand-field {
+  flex: 1 1 220px;
+  margin-bottom: 0;
+}
+
+.avoid-problem {
+  min-height: 1.2em;
+  margin: 6px 0;
+  font-size: 0.9rem;
+}
+
+.avoid-custom-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.avoid-custom-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 4px 4px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
+.avoid-remove {
+  padding: 4px 10px;
+  font-size: 0.8rem;
+}
+
+.avoid-groups {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.avoid-groups label {
+  display: block;
+  padding: 4px 0;
+}
+
+.ingredient-check.avoid {
+  background: #fde8e8;
+  color: #8a1c1c;
+}
+
+.avoided-banner {
+  font-weight: 700;
+}
+
+.ingredient-check .ok-with {
+  margin-top: 6px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}

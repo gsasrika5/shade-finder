@@ -1,11 +1,10 @@
 // The "Check any product's ingredients" section of the Skincare tab: scan a
 // barcode or search Open Beauty Facts by name, and show each product's
 // ingredients with the ones to watch flagged.
+import { checkIngredients, loadAvoidList, onAvoidListChange, personalWarning } from "./avoid-list.js";
 import { cameraProblem, startScanning } from "./barcode-scanner.js";
-import { skincareWarning } from "./ingredient-flags.js";
 import { cleanBarcode, lookUpBarcode, searchWithFallback } from "./online-lookup.js";
 import { ingredientCheck, ingredientList } from "./product-details.js";
-import { ingredientsToWatch } from "./skincare-match.js";
 
 const form = document.getElementById("online-lookup-form");
 const input = document.getElementById("online-lookup-input");
@@ -22,6 +21,8 @@ const barcodeInput = document.getElementById("barcode-input");
 const barcodeButton = document.getElementById("barcode-button");
 const unreachable = "Couldn't reach the ingredient database. Check your internet connection and try again.";
 let stopCamera = null;
+let avoidList = loadAvoidList();
+let shownProducts = [];
 
 function onlineProductCard(product) {
   const item = document.createElement("li");
@@ -46,10 +47,17 @@ function onlineProductCard(product) {
   fullList.className = "product-ingredients";
   const summary = document.createElement("summary");
   summary.textContent = `All ${product.ingredients.length} ingredients`;
-  fullList.append(summary, ingredientList(product.ingredients, { warningFor: skincareWarning, watchedName: "ingredient" }));
-  info.append(brand, name, ingredientCheck(ingredientsToWatch(product)), fullList);
+  fullList.append(summary, ingredientList(product.ingredients, { warningFor: personalWarning(avoidList), watchedName: "ingredient" }));
+  info.append(brand, name, ingredientCheck(checkIngredients(product.ingredients, avoidList)), fullList);
   item.append(info);
   return item;
+}
+
+// Shows these products' cards, remembering them so they can be redrawn when
+// the avoid list changes.
+function showProducts(products) {
+  shownProducts = products;
+  resultsList.replaceChildren(...products.map(onlineProductCard));
 }
 
 // What the search found, saying so when it had to drop words to find anything.
@@ -73,11 +81,11 @@ async function lookUp(event) {
   }
   button.disabled = true;
   statusText.textContent = `Searching the internet for "${query}"…`;
-  resultsList.replaceChildren();
+  showProducts([]);
   try {
     const { products, searchedFor } = await searchWithFallback(query);
     statusText.textContent = lookupStatus(query, products.length, searchedFor);
-    resultsList.replaceChildren(...products.map(onlineProductCard));
+    showProducts(products);
   } catch {
     statusText.textContent = unreachable;
   } finally {
@@ -100,12 +108,12 @@ function barcodeStatus(barcode, result) {
 async function showBarcode(barcode) {
   barcodeButton.disabled = true;
   statusText.textContent = `Looking up barcode ${barcode}…`;
-  resultsList.replaceChildren();
+  showProducts([]);
   try {
     const result = await lookUpBarcode(barcode);
     statusText.textContent = barcodeStatus(barcode, result);
     if (result.status === "found") {
-      resultsList.replaceChildren(onlineProductCard(result.product));
+      showProducts([result.product]);
     }
   } catch {
     statusText.textContent = unreachable;
@@ -125,7 +133,7 @@ async function openCamera() {
   scanButton.hidden = true;
   camera.hidden = false;
   statusText.textContent = "Starting the camera…";
-  resultsList.replaceChildren();
+  showProducts([]);
   try {
     stopCamera = await startScanning(video, (barcode) => {
       closeCamera();
@@ -143,7 +151,7 @@ function lookUpTypedBarcode(event) {
   event.preventDefault();
   const barcode = cleanBarcode(barcodeInput.value);
   if (!barcode) {
-    resultsList.replaceChildren();
+    showProducts([]);
     statusText.textContent = "A barcode number is 8 to 14 digits. Check the digits under the lines and try again.";
     return;
   }
@@ -160,3 +168,7 @@ cancelButton.addEventListener("click", () => {
   statusText.textContent = "";
 });
 barcodeForm.addEventListener("submit", lookUpTypedBarcode);
+onAvoidListChange((changedList) => {
+  avoidList = changedList;
+  showProducts(shownProducts);
+});
