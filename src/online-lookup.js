@@ -2,7 +2,7 @@
 // Facts, a free, open database of cosmetics that anyone can add to.
 const SEARCH_URL = "https://world.openbeautyfacts.org/cgi/search.pl";
 const PRODUCT_URL = "https://world.openbeautyfacts.org/api/v2/product";
-const PRODUCT_FIELDS = "product_name,brands,ingredients_text,image_front_small_url";
+const PRODUCT_FIELDS = "code,product_name,brands,ingredients_text,image_front_small_url";
 const MAX_RESULTS = 5;
 
 // Splits a label's ingredient text into single ingredients. Commas inside
@@ -92,7 +92,7 @@ export function uniqueProducts(products) {
 }
 
 // Returns up to five different products matching the search that have an
-// ingredient list, each as { name, brand, imageUrl, ingredients }. Throws if
+// ingredient list, each as { barcode, name, brand, imageUrl, ingredients }. Throws if
 // the database can't be reached.
 export async function searchProductsOnline(query) {
   const params = new URLSearchParams({
@@ -115,9 +115,11 @@ function hasIngredients(product) {
   return Boolean(product.product_name && product.ingredients_text);
 }
 
-// Turns an Open Beauty Facts product into { name, brand, imageUrl, ingredients }.
+// Turns an Open Beauty Facts product into { barcode, name, brand, imageUrl,
+// ingredients }. The barcode is null if the database doesn't have one.
 function toProduct(product) {
   return {
+    barcode: product.code || null,
     name: product.product_name,
     brand: product.brands || "Unknown brand",
     imageUrl: product.image_front_small_url ?? null,
@@ -153,7 +155,7 @@ export async function lookUpBarcode(barcode) {
   if (!hasIngredients(data.product)) {
     return { status: "no-ingredients", name: data.product.product_name || "This product" };
   }
-  return { status: "found", product: toProduct(data.product) };
+  return { status: "found", product: { ...toProduct(data.product), barcode } };
 }
 
 // Searches for the whole name first. If nothing is found, drops words from

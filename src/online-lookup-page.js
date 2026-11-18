@@ -1,10 +1,19 @@
 // The "Check any product's ingredients" section of the Skincare tab: scan a
 // barcode or search Open Beauty Facts by name, and show each product's
 // ingredients with the ones to watch flagged.
-import { checkIngredients, loadAvoidList, onAvoidListChange, personalWarning } from "./avoid-list.js";
+import { loadAvoidList, onAvoidListChange } from "./avoid-list.js";
 import { cameraProblem, startScanning } from "./barcode-scanner.js";
+import {
+  addToMyProducts,
+  isInMyProducts,
+  loadMyProducts,
+  MAX_MY_PRODUCTS,
+  onMyProductsChange,
+  removeFromMyProducts,
+  saveMyProducts,
+} from "./my-products.js";
 import { cleanBarcode, lookUpBarcode, searchWithFallback } from "./online-lookup.js";
-import { ingredientCheck, ingredientList } from "./product-details.js";
+import { realProductCard } from "./real-product-card.js";
 
 const form = document.getElementById("online-lookup-form");
 const input = document.getElementById("online-lookup-input");
@@ -23,34 +32,34 @@ const unreachable = "Couldn't reach the ingredient database. Check your internet
 let stopCamera = null;
 let avoidList = loadAvoidList();
 let shownProducts = [];
+let myProducts = loadMyProducts();
+
+// The card's ♡ Save button, or ♥ Saved once it's in My products (tap again
+// to remove it).
+function saveButton(product) {
+  const saved = isInMyProducts(myProducts, product);
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = saved ? "save-button saved" : "save-button";
+  button.textContent = saved ? "♥ Saved to My products" : "♡ Save to My products";
+  button.setAttribute("aria-pressed", String(saved));
+  button.addEventListener("click", () => {
+    if (isInMyProducts(myProducts, product)) {
+      saveMyProducts(removeFromMyProducts(myProducts, product));
+      return;
+    }
+    const added = addToMyProducts(myProducts, product);
+    if (added === null) {
+      statusText.textContent = `My products is full (${MAX_MY_PRODUCTS}). Remove one at the top of the page to save another.`;
+      return;
+    }
+    saveMyProducts(added);
+  });
+  return button;
+}
 
 function onlineProductCard(product) {
-  const item = document.createElement("li");
-  item.className = "product-card skincare-card";
-  if (product.imageUrl) {
-    const image = document.createElement("img");
-    image.className = "product-image";
-    image.src = product.imageUrl;
-    image.alt = "";
-    image.loading = "lazy";
-    item.append(image);
-  }
-  const info = document.createElement("div");
-  info.className = "product-info";
-  const brand = document.createElement("p");
-  brand.className = "product-brand";
-  brand.textContent = product.brand;
-  const name = document.createElement("p");
-  name.className = "product-name";
-  name.textContent = product.name;
-  const fullList = document.createElement("details");
-  fullList.className = "product-ingredients";
-  const summary = document.createElement("summary");
-  summary.textContent = `All ${product.ingredients.length} ingredients`;
-  fullList.append(summary, ingredientList(product.ingredients, { warningFor: personalWarning(avoidList), watchedName: "ingredient" }));
-  info.append(brand, name, ingredientCheck(checkIngredients(product.ingredients, avoidList)), fullList);
-  item.append(info);
-  return item;
+  return realProductCard(product, avoidList, saveButton(product));
 }
 
 // Shows these products' cards, remembering them so they can be redrawn when
@@ -170,5 +179,9 @@ cancelButton.addEventListener("click", () => {
 barcodeForm.addEventListener("submit", lookUpTypedBarcode);
 onAvoidListChange((changedList) => {
   avoidList = changedList;
+  showProducts(shownProducts);
+});
+onMyProductsChange((changedProducts) => {
+  myProducts = changedProducts;
   showProducts(shownProducts);
 });

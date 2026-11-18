@@ -52,6 +52,16 @@
         </details>
       </section>
 
+      <section id="my-products-section" aria-labelledby="my-products-heading" hidden>
+        <h2 id="my-products-heading">My products (<span id="my-products-count">0</span>)</h2>
+        <p class="hint">
+          Products you saved from a scan or search, checked against your ingredients to avoid. Saved on this
+          device.
+        </p>
+        <p id="my-products-status" class="my-products-status" role="status"></p>
+        <ul id="my-products-list" class="results-list online-lookup-results"></ul>
+      </section>
+
       <section aria-labelledby="skincare-search-heading">
         <h2 id="skincare-search-heading">1. Find your product</h2>
         <label class="brand-field" for="skincare-search">
@@ -129,6 +139,7 @@
     </main>
 
     <script type="module" src="src/avoid-list-page.js"></script>
+    <script type="module" src="src/my-products-page.js"></script>
     <script type="module" src="src/skincare-page.js"></script>
     <script type="module" src="src/online-lookup-page.js"></script>
   </body>

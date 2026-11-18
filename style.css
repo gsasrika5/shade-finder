@@ -944,3 +944,19 @@ button.secondary {
   font-size: 0.8rem;
   color: var(--muted);
 }
+
+/* My products: saved real products, each with a Remove button. */
+.my-products-status {
+  min-height: 1.2em;
+  margin: 6px 0;
+}
+
+.undo-button,
+.remove-product {
+  padding: 4px 12px;
+  font-size: 0.85rem;
+}
+
+.remove-product {
+  margin-top: 8px;
+}
