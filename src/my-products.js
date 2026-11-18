@@ -7,6 +7,12 @@ export const MAX_MY_PRODUCTS = 30;
 // How a saved product worked for the user: "good", "irritated", or null for
 // not marked yet.
 export const REACTIONS = ["good", "irritated"];
+// A short note of the user's own, like "too greasy" or "$12 at Target".
+export const MAX_NOTE_LENGTH = 200;
+
+function cleanNote(text) {
+  return typeof text === "string" ? text.trim().slice(0, MAX_NOTE_LENGTH) : "";
+}
 
 // The same product found by barcode or by name gets the same id when the
 // database has its barcode; otherwise brand and name stand in.
@@ -25,7 +31,7 @@ function isSavedProduct(value) {
 
 // Browser storage can be blocked (for example in private windows), or hold
 // something unexpected; then the list starts empty, skipping broken entries,
-// and an unknown reaction counts as not marked.
+// an unknown reaction counts as not marked, and a broken note as no note.
 export function loadMyProducts() {
   try {
     const saved = JSON.parse(localStorage.getItem(MY_PRODUCTS_STORAGE));
@@ -33,7 +39,11 @@ export function loadMyProducts() {
       ? saved
           .filter(isSavedProduct)
           .slice(0, MAX_MY_PRODUCTS)
-          .map((product) => ({ ...product, reaction: REACTIONS.includes(product.reaction) ? product.reaction : null }))
+          .map((product) => ({
+            ...product,
+            reaction: REACTIONS.includes(product.reaction) ? product.reaction : null,
+            note: cleanNote(product.note),
+          }))
       : [];
   } catch {
     return [];
@@ -69,7 +79,14 @@ export function addToMyProducts(myProducts, product) {
     return null;
   }
   const { barcode = null, name, brand, imageUrl = null, ingredients } = product;
-  return [{ barcode, name, brand, imageUrl, ingredients, reaction: null }, ...myProducts];
+  return [{ barcode, name, brand, imageUrl, ingredients, reaction: null, note: "" }, ...myProducts];
+}
+
+// Saves the user's note on a product, trimmed and cut to MAX_NOTE_LENGTH. An
+// empty note removes it.
+export function setNote(myProducts, product, text) {
+  const id = productId(product);
+  return myProducts.map((saved) => (productId(saved) === id ? { ...saved, note: cleanNote(text) } : saved));
 }
 
 // Marks how a saved product worked for the user. Choosing the same reaction

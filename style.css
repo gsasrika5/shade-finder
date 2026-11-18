@@ -1059,3 +1059,50 @@ section > h3 {
   margin: 16px 0 6px;
   font-size: 1rem;
 }
+
+/* Notes on saved products. */
+.product-info .product-note {
+  margin: 8px 0 4px;
+  padding: 6px 10px;
+  border-left: 3px solid var(--accent);
+  background: #faf6f8;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.note-button,
+.note-cancel,
+.note-save {
+  padding: 4px 12px;
+  font-size: 0.85rem;
+}
+
+.note-area,
+.note-editor {
+  margin-top: 8px;
+}
+
+.note-input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  font: inherit;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  resize: vertical;
+}
+
+.note-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.note-count {
+  margin-left: auto;
+  font-size: 0.8rem;
+  color: var(--muted);
+}

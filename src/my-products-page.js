@@ -1,10 +1,19 @@
 // The "My products" section of the Skincare tab: the products the user saved,
-// each marked as worked or irritated and with a Remove button that takes out
-// just that one (with Undo). Above them, "What's irritating my skin?" lists
+// each with a note of their own, marked as worked or irritated, and with a
+// Remove button that takes out just that one (with Undo). Above them, "What's irritating my skin?" lists
 // ingredients the irritating products share, to add to the avoid list.
 import { loadAvoidList, onAvoidListChange, saveAvoidList, validateCustom } from "./avoid-list.js";
 import { findSuspects, MIN_IRRITATED } from "./irritation.js";
-import { loadMyProducts, onMyProductsChange, removeFromMyProducts, saveMyProducts, setReaction } from "./my-products.js";
+import {
+  loadMyProducts,
+  MAX_NOTE_LENGTH,
+  onMyProductsChange,
+  productId,
+  removeFromMyProducts,
+  saveMyProducts,
+  setNote,
+  setReaction,
+} from "./my-products.js";
 import { realProductCard } from "./real-product-card.js";
 
 const section = document.getElementById("my-products-section");
@@ -16,6 +25,10 @@ const suspectList = document.getElementById("irritation-suspects");
 
 let myProducts = loadMyProducts();
 let avoidList = loadAvoidList();
+// The product whose note is being written, and the text so far, so the
+// editor survives the page redrawing (say, when the avoid list changes).
+let editingId = null;
+let noteDraft = "";
 
 function showRemoved(product, index) {
   const undo = document.createElement("button");
@@ -71,9 +84,83 @@ function reactionButtons(product) {
   return group;
 }
 
+function noteEditor(product) {
+  const form = document.createElement("form");
+  form.className = "note-editor";
+  const box = document.createElement("textarea");
+  box.className = "note-input";
+  box.setAttribute("aria-label", `Your note on ${product.name}`);
+  box.maxLength = MAX_NOTE_LENGTH;
+  box.rows = 3;
+  box.placeholder = "e.g. Too greasy for daytime. $12 at Target.";
+  box.value = noteDraft;
+  const count = document.createElement("span");
+  count.className = "note-count";
+  const showCount = () => {
+    count.textContent = `${box.value.length}/${MAX_NOTE_LENGTH}`;
+  };
+  showCount();
+  box.addEventListener("input", () => {
+    noteDraft = box.value;
+    showCount();
+  });
+  const save = document.createElement("button");
+  save.type = "submit";
+  save.className = "note-save";
+  save.textContent = "Save note";
+  const cancel = document.createElement("button");
+  cancel.type = "button";
+  cancel.className = "secondary note-cancel";
+  cancel.textContent = "Cancel";
+  cancel.addEventListener("click", () => {
+    editingId = null;
+    render();
+  });
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    editingId = null;
+    saveMyProducts(setNote(myProducts, product, box.value));
+  });
+  const buttons = document.createElement("div");
+  buttons.className = "note-buttons";
+  buttons.append(save, cancel, count);
+  form.append(box, buttons);
+  return form;
+}
+
+// The note as written, with Edit, or a button to add one.
+function noteArea(product) {
+  if (productId(product) === editingId) {
+    return noteEditor(product);
+  }
+  const area = document.createElement("div");
+  area.className = "note-area";
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "secondary note-button";
+  if (product.note) {
+    const note = document.createElement("p");
+    note.className = "product-note";
+    note.textContent = `📝 ${product.note}`;
+    area.append(note);
+    button.textContent = "Edit note";
+  } else {
+    button.textContent = "📝 Add a note";
+  }
+  button.setAttribute("aria-label", `${product.note ? "Edit" : "Add"} a note on ${product.name}`);
+  button.addEventListener("click", () => {
+    editingId = productId(product);
+    noteDraft = product.note ?? "";
+    render();
+    list.querySelector(".note-input")?.focus();
+  });
+  area.append(button);
+  return area;
+}
+
 function cardActions(product) {
   const actions = document.createElement("div");
-  actions.append(reactionButtons(product), removeButton(product));
+  actions.append(noteArea(product), reactionButtons(product), removeButton(product));
   return actions;
 }
 
